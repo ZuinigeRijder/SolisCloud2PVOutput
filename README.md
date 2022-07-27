@@ -1,14 +1,14 @@
 [![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
 
 # SolisCloud to PVOutput
-Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal updates to PVOutput portal. 
+Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal update to PVOutput portal. 
 
 The SolisCloud2PVOutput.py will get the first stationId with the secrets of SolisCloud (see next section). Thereafter it will get the first inverter id and serial number. Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
 * acVoltage (assuming 1 phase system)
 * dcPV (assuming no more than 4 strings)
-* watt 
-* totalWattHour
+* watt (current)
+* totalWattHour (Day)
 
 This information is used to compute the new information to be send to PVOutput, when the timestamp is changed.
 
@@ -16,7 +16,7 @@ Notes
 * only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput
 * Each new day the totalWatthour starts with 0
 * Because the resolution of the SolisCloud totalWatt is in 100 Watt, a higher resolution totalWatt is computed with current Watt
-* if you have more than 1 station/inverter or a 3 phase inverter, you need to adapt the script
+* if you have more than 1 station/inverter, more than 4 strings or a 3 phase inverter, you need to adapt the script
 
 ## SolisCloud
 [SolisCloud](https://www.soliscloud.com/) is the next generation Portal for Solis branded PV systems from Ginlong.
@@ -43,12 +43,11 @@ The python script requires a PVOutput API_KEY and SYSTEM_ID to function.
 
 ## Configuration
 Change in SolisCloud2PVOutpy.py the following lines with your above obtained secrets:
-
-SOLISCLOUD_API_ID = 'xxxx'
-SOLISCLOUD_API_SECRET = b'xxxx'
-SOLISCLOUD_API_URL = 'https://www.soliscloud.com:13333'
-PVOUTPUT_API_KEY = 'xxxx'
-PVOUTPUT_SYSTEM_ID = 'xxxx'
+* SOLISCLOUD_API_ID = 'xxxx'
+* SOLISCLOUD_API_SECRET = b'xxxx'
+* SOLISCLOUD_API_URL = 'https://www.soliscloud.com:13333'
+* PVOUTPUT_API_KEY = 'xxxx'
+* PVOUTPUT_SYSTEM_ID = 'xxxx'
 
 ## Usage
 ### Windows 10
