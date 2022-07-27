@@ -56,7 +56,7 @@ python SolisCloud2PVoutput.py
 ### Raspberry pi
 python3 SolisCloud2PVoutput.py
 
-## Raspberry pi Weezy
+## Raspberry pi Wheezy
 I have still an old Raspberry pi running at home, running SMASpot for transferring PV data via bluetooth from SMA Sunny Boy 4000TL to PVOutput. Wheezy is no longer supported, but I did not want to change my Raspberry pi OS to the latest, because of the configuration hassle of the already running raspberry pi since 2012. However, Python 3.2.3 is running on this Raspberry pi, and the SolisCloud2PVOutput.py scripts runs on this OS.
 
 ### Configuration
