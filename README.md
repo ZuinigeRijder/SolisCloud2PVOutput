@@ -14,6 +14,7 @@ This information is used to compute the new information to be send to PVOutput, 
 
 Notes
 * only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput
+* the script will exit outside 5 and 23, or you need to comment the line: sys.exit('Exiting program to avoid possible memory leaks')
 * Each new day the totalWatthour starts with 0
 * Because the resolution of the SolisCloud totalWatt is in 100 Watt, a higher resolution totalWatt is computed with current Watt
 * if you have more than 1 station/inverter, more than 4 strings or a 3 phase inverter, you need to adapt the script
@@ -54,23 +55,23 @@ Change in SolisCloud2PVOutpy.py the following lines with your above obtained sec
 python SolisCloud2PVoutput.py
 
 ### Raspberry pi
-python3 SolisCloud2PVoutput.py
+SolisCloud2PVOutput.py scripts runs on Wheezy when using python3. However, I upgraded my Raspberry pi to Raspbian GNU/Linux 11 (bullseye).
 
-## Raspberry pi Wheezy
-I have still an old Raspberry pi running at home, running SMASpot for transferring PV data via bluetooth from SMA Sunny Boy 4000TL to PVOutput. Wheezy is no longer supported, but I did not want to change my Raspberry pi OS to the latest, because of the configuration hassle of the already running raspberry pi since 2012. However, Python 3.2.3 is running on this Raspberry pi, and the SolisCloud2PVOutput.py scripts runs on this OS.
-
-### Configuration
+### Raspberry pi Configuration
 Steps:
-* create a directory /home/pi/solis
-* copy solis.sh and SolisCloud2PVOutput.py in this directory
+* create a directory solis in your home directory
+* copy solis.sh and SolisCloud2PVOutput.py in this solis directory
+* change inside solis.sh python into python3 when using Wheezy and/or default python version is not 3.x
+* change inside SolisCloud2PVOutput.py the API secrets
 * chmod + x solis.sh
 * add the following line in your crontab -e:
 ```
-*/30 5-23 * * * /home/pi/solis/solis.sh > /dev/null
+2 5 * * * ~/solis/solis.sh > /dev/null
+@reboot sleep 123 && ~/solis/solis.sh > /dev/null
 ```
 
 ### log files
-Log files are written in directory /home/pi/solis
+Log files are written in directory home subdirectory solis
 * solis.log containing the data send to PVOutput (and maybe error messages)
 * solis.crontab.log containing the crontab output (normally it will say that solis.sh is running).
 

@@ -4,6 +4,7 @@ import hashlib
 import hmac
 import json
 import time
+import sys
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, Request
@@ -94,6 +95,7 @@ while True:
         log('Outside solar generation hours (5..23)')
         time.sleep(round((60-dateNow.minute)*60)) # wait till next hour
         prevDataTimestamp = '0'
+        sys.exit('Exiting program to avoid possible memory leaks') # if you want this program to run forever, comment this line with #
         continue # start loop over again
 
     content = solisCloudPost(INVERTER_DETAIL, body)
