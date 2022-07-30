@@ -72,7 +72,7 @@ def pvoutputPost(dt, totalWattHour, watt, dcPV) -> str:
         retry = retry + 1
         content = post(PVOUTPUT_ADD_BATCH_STATUS_URL, pvoutputString, header)
         if content != 'ERROR' or retry > 10:
-            return content 
+            return content
 
 #== MAIN ======================================================================
 body = '{"userid":"' + SOLISCLOUD_API_ID + '"}'
