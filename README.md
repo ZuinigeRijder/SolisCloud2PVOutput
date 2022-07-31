@@ -65,13 +65,26 @@ Steps:
 * change inside SolisCloud2PVOutput.py the API secrets
 * chmod + x solis.sh
 * add the following line in your crontab -e:
+
 ```
 2 5 * * * ~/solis/solis.sh > /dev/null
 @reboot sleep 123 && ~/solis/solis.sh > /dev/null
 ```
 
 ### log files
-Log files are written in directory home subdirectory solis
+Log files are written in the home subdirectory solis
 * solis.log containing the data send to PVOutput (and maybe error messages)
 * solis.crontab.log containing the crontab output (normally it will say that solis.sh is running).
 
+### Example output solis.log
+
+```
+20220730 23:00:17: Outside solar generation hours (5..23)
+Exiting program to avoid possible memory leaks
+20220731 06:34:07: data=20220731,06:33,0,20,-1,-1,,77.4
+20220731 06:49:17: data=20220731,06:48,5,20,-1,-1,,82.0
+20220731 06:54:20: data=20220731,06:53,6,20,-1,-1,,111.0
+20220731 06:59:24: data=20220731,06:58,7,20,-1,-1,,170.1
+20220731 07:04:28: data=20220731,07:03,8,20,-1,-1,,142.0
+20220731 07:09:30: data=20220731,07:08,9,20,-1,-1,,143.6
+```
