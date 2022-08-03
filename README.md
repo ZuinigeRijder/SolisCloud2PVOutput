@@ -3,7 +3,7 @@
 # SolisCloud to PVOutput
 Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal update to PVOutput portal. 
 
-The SolisCloud2PVOutput.py will get the first stationId with the secrets of SolisCloud (see next section). Thereafter it will get the first inverter id and serial number. Then in an endless loop the inverter details are fetched and the following information is used:
+The soliscloud_to_pvoutput.py script will get the first station id with the secrets of SolisCloud (see next section). Thereafter it will get the first inverter id and serial number. Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
 * acVoltage (assuming 1 phase system)
 * dcPV (assuming no more than 4 strings)
@@ -14,7 +14,7 @@ This information is used to compute the new information to be send to PVOutput, 
 
 Notes
 * only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput
-* the script will exit outside 5 and 23, or you need to comment the line: sys.exit('Exiting program to avoid possible memory leaks')
+* the script will exit outside 5 and 23
 * Each new day the totalWatthour starts with 0
 * Because the resolution of the SolisCloud totalWatt is in 100 Watt, a higher resolution totalWatt is computed with current Watt
 * if you have more than 1 station/inverter, more than 4 strings or a 3 phase inverter, you need to adapt the script
@@ -43,7 +43,7 @@ The python script requires a PVOutput API_KEY and SYSTEM_ID to function.
 * Save your settings
 
 ## Configuration
-Change in SolisCloud2PVOutpy.py the following lines with your above obtained secrets:
+Change in soliscloud_to_pvoutput.py the following lines with your above obtained secrets:
 * SOLISCLOUD_API_ID = 'xxxx'
 * SOLISCLOUD_API_SECRET = b'xxxx'
 * SOLISCLOUD_API_URL = 'https://www.soliscloud.com:13333'
@@ -52,17 +52,17 @@ Change in SolisCloud2PVOutpy.py the following lines with your above obtained sec
 
 ## Usage
 ### Windows 10
-python SolisCloud2PVoutput.py
+python soliscloud_to_pvoutput.py
 
 ### Raspberry pi
-SolisCloud2PVOutput.py scripts runs on Wheezy when using python3. However, I upgraded my Raspberry pi to Raspbian GNU/Linux 11 (bullseye).
+soliscloud_to_pvoutput.py scripts runs on Wheezy when using python3. However, I upgraded my Raspberry pi to Raspbian GNU/Linux 11 (bullseye).
 
 ### Raspberry pi Configuration
 Steps:
 * create a directory solis in your home directory
-* copy solis.sh and SolisCloud2PVOutput.py in this solis directory
+* copy solis.sh and soliscloud_to_pvoutput.py in this solis directory
 * change inside solis.sh python into python3 when using Wheezy and/or default python version is not 3.x
-* change inside SolisCloud2PVOutput.py the API secrets
+* change inside soliscloud_to_pvoutput.py the API secrets
 * chmod + x solis.sh
 * add the following line in your crontab -e:
 
@@ -80,7 +80,7 @@ Log files are written in the home subdirectory solis
 
 ```
 20220730 23:00:17: Outside solar generation hours (5..23)
-Exiting program to avoid possible memory leaks
+Exiting program to start fresh tomorrow
 20220731 06:34:07: data=20220731,06:33,0,20,-1,-1,,77.4
 20220731 06:49:17: data=20220731,06:48,5,20,-1,-1,,82.0
 20220731 06:54:20: data=20220731,06:53,6,20,-1,-1,,111.0
