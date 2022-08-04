@@ -29,11 +29,13 @@ INVERTER_LIST = '/v1/api/inveterList'
 INVERTER_DETAIL = '/v1/api/inveterDetail'
 PVOUTPUT_ADD_URL = 'http://pvoutput.org/service/r2/addbatchstatus.jsp'
 
+TODAY = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
+
 
 # == log =====================================================================
 def log(msg):
     """log a message prefixed with a date/time format yyyymmdd hh:mm:ss"""
-    print(datetime.now().strftime("%Y%m%d %H:%M:%S") + ': ' + msg)
+    print(TODAY + datetime.now().strftime(" %H:%M:%S") + ': ' + msg)
 
 
 # == post ====================================================================
@@ -94,8 +96,7 @@ def solis_cloud_post(url_part, data) -> str:
 def pvoutput_post(prefix, datetime_current, watthour_today, watt, volt) -> str:
     """pvoutput post data with the provided parameters"""
     pvoutput_string = (
-        'data=' +
-        datetime_current.strftime("%Y%m%d") +
+        'data=' + TODAY +
         ',' + datetime_current.strftime("%H:%M") +
         ',' + str(watthour_today) +
         ',' + str(watt) +
