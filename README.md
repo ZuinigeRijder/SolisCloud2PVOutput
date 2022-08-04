@@ -5,18 +5,19 @@ Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud po
 
 The soliscloud_to_pvoutput.py script will get the first station id with the secrets of SolisCloud (see next section). Thereafter it will get the first inverter id and serial number. Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
-* acVoltage (assuming 1 phase system)
-* dcPV (assuming no more than 4 strings)
+* DC PV voltage (assuming no more than 4 strings)
 * watt (current)
-* totalWattHour (Day)
+* watthour today
+* inverter temperature (logged only)
+* AC voltage (assuming 1 phase system, logged only)
 
 This information is used to compute the new information to be send to PVOutput, when the timestamp is changed.
 
 Notes
 * only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput
 * the script will exit outside 5 and 23
-* Each new day the totalWatthour starts with 0
-* Because the resolution of the SolisCloud totalWatt is in 100 Watt, a higher resolution totalWatt is computed with current Watt
+* Each new day the "watthour today" starts with 0
+* Because the resolution of the SolisCloud watthour is in 100 Watt, a higher resolution is computed with current Watt
 * if you have more than 1 station/inverter, more than 4 strings or a 3 phase inverter, you need to adapt the script
 
 ## SolisCloud
@@ -81,10 +82,10 @@ Log files are written in the home subdirectory solis
 ```
 20220730 23:00:17: Outside solar generation hours (5..23)
 Exiting program to start fresh tomorrow
-20220731 06:34:07: data=20220731,06:33,0,20,-1,-1,,77.4
-20220731 06:49:17: data=20220731,06:48,5,20,-1,-1,,82.0
-20220731 06:54:20: data=20220731,06:53,6,20,-1,-1,,111.0
-20220731 06:59:24: data=20220731,06:58,7,20,-1,-1,,170.1
-20220731 07:04:28: data=20220731,07:03,8,20,-1,-1,,142.0
-20220731 07:09:30: data=20220731,07:08,9,20,-1,-1,,143.6
+20220731 06:34:07: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:33,0,20,-1,-1,,77.4
+20220731 06:49:17: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:48,5,20,-1,-1,,82.0
+20220731 06:54:20: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:53,6,20,-1,-1,,111.0
+20220731 06:59:24: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:58,7,20,-1,-1,,170.1
+20220731 07:04:28: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,07:03,8,20,-1,-1,,142.0
+20220731 07:09:30: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,07:08,9,20,-1,-1,,143.6
 ```

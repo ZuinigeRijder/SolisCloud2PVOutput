@@ -91,7 +91,7 @@ def solis_cloud_post(url_part, data) -> str:
 
 
 # == pvoutput_post ===========================================================
-def pvoutput_post(datetime_current, watthour_today, watt, volt) -> str:
+def pvoutput_post(prefix, datetime_current, watthour_today, watt, volt) -> str:
     """pvoutput post data with the provided parameters"""
     pvoutput_string = (
         'data=' +
@@ -101,7 +101,7 @@ def pvoutput_post(datetime_current, watthour_today, watt, volt) -> str:
         ',' + str(watt) +
         ',-1,-1,,' + str(volt)
     )
-    log(pvoutput_string)
+    log(prefix + ' ' + pvoutput_string)
     headers = {
         'X-Pvoutput-Apikey': PVOUTPUT_API_KEY,
         'X-Pvoutput-SystemId': PVOUTPUT_SYSTEM_ID,
@@ -149,6 +149,8 @@ def main_loop():
 
         content = solis_cloud_post(INVERTER_DETAIL, inverter_detail_body)
         inverter_detail = json.loads(content)['data']
+        # json_formatted_str = json.dumps(inverter_detail, indent=2)
+        # print(json_formatted_str)
         timestamp_current = inverter_detail['dataTimestamp']
         volt = (
             inverter_detail['uPv1'] +
@@ -158,6 +160,12 @@ def main_loop():
         )
         watt = round(inverter_detail['pac'] * 1000)
         watthour_today = round(inverter_detail['eToday'] * 1000)
+        inverter_temp = inverter_detail['inverterTemperature']
+        ac_volt = inverter_detail['uAc1']
+        prefix = (
+            'inverter temperature: ' + str(inverter_temp) +
+            ', AC voltage: ' + str(ac_volt)
+        )
 
         if timestamp_previous == '0':
             hi_res_watthour_today = watthour_today
@@ -181,7 +189,8 @@ def main_loop():
                         # hi_res_total_watthour was too high
                         hi_res_watthour_today = watthour_today + 99
 
-            pvoutput_post(datetime_current, hi_res_watthour_today, watt, volt)
+            pvoutput_post(
+                prefix, datetime_current, hi_res_watthour_today, watt, volt)
             timestamp_previous = timestamp_current
 
         time.sleep(60)  # wait 1 minute before checking again
