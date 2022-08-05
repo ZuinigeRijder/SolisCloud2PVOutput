@@ -44,26 +44,25 @@ The python script requires a PVOutput API_KEY and SYSTEM_ID to function.
 * Save your settings
 
 ## Configuration
-Change in soliscloud_to_pvoutput.py the following lines with your above obtained secrets:
-* SOLISCLOUD_API_ID = 'xxxx'
-* SOLISCLOUD_API_SECRET = b'xxxx'
-* SOLISCLOUD_API_URL = 'https://www.soliscloud.com:13333'
-* PVOUTPUT_API_KEY = 'xxxx'
-* PVOUTPUT_SYSTEM_ID = 'xxxx'
+Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets:
+* soliscloud_api_id = 1300386381123456789
+* soliscloud_api_secret = 304abf2bd8a44242913d704123456789
+* soliscloud_api_url = https://www.soliscloud.com:13333
+* pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
+* pvoutput_system_id = 12345
 
 ## Usage
 ### Windows 10
 python soliscloud_to_pvoutput.py
 
 ### Raspberry pi
-soliscloud_to_pvoutput.py scripts runs on Wheezy when using python3. However, I upgraded my Raspberry pi to Raspbian GNU/Linux 11 (bullseye).
+soliscloud_to_pvoutput.py scripts runs on my Raspberry pi with Raspbian GNU/Linux 11 (bullseye).
 
 ### Raspberry pi Configuration
 Steps:
 * create a directory solis in your home directory
-* copy solis.sh and soliscloud_to_pvoutput.py in this solis directory
-* change inside solis.sh python into python3 when using Wheezy and/or default python version is not 3.x
-* change inside soliscloud_to_pvoutput.py the API secrets
+* copy solis.sh, soliscloud_to_pvoutput.py and soliscloud_to_pvoutput.cfg in this solis directory
+* change inside soliscloud_to_pvoutput.cfg the API secrets
 * chmod + x solis.sh
 * add the following line in your crontab -e:
 
@@ -82,10 +81,10 @@ Log files are written in the home subdirectory solis
 ```
 20220730 23:00:17: Outside solar generation hours (5..23)
 Exiting program to start fresh tomorrow
-20220731 06:34:07: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:33,0,20,-1,-1,,77.4
-20220731 06:49:17: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:48,5,20,-1,-1,,82.0
-20220731 06:54:20: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:53,6,20,-1,-1,,111.0
-20220731 06:59:24: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,06:58,7,20,-1,-1,,170.1
-20220731 07:04:28: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,07:03,8,20,-1,-1,,142.0
-20220731 07:09:30: inverter temperature: 36.1, ac voltage: 237.2 data=20220731,07:08,9,20,-1,-1,,143.6
+20220731 06:34:07: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:33,0,20,-1,-1,,77.4
+20220731 06:49:17: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:48,5,20,-1,-1,,82.0
+20220731 06:54:20: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:53,6,20,-1,-1,,111.0
+20220731 06:59:24: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:58,7,20,-1,-1,,170.1
+20220731 07:04:28: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,07:03,8,20,-1,-1,,142.0
+20220731 07:09:30: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,07:08,9,20,-1,-1,,143.6
 ```

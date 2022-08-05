@@ -9,17 +9,22 @@ import hmac
 import json
 import time
 import sys
+import configparser
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, Request
 
+# == read api_secrets in soliscloud_to_pvoutput.cfg ==========================
+parser = configparser.ConfigParser()
+parser.read('soliscloud_to_pvoutput.cfg')
+api_secrets = dict(parser.items('api_secrets'))
 
-# == Secrets, fill in yours ==================================================
-SOLISCLOUD_API_ID = 'xxxx'
-SOLISCLOUD_API_SECRET = b'xxxx'
-SOLISCLOUD_API_URL = 'https://www.soliscloud.com:13333'
-PVOUTPUT_API_KEY = 'xxxx'
-PVOUTPUT_SYSTEM_ID = 'xxxx'
+# == API Secrets, fill in yours in soliscloud_to_pvoutput.cfg ================
+SOLISCLOUD_API_ID = api_secrets['soliscloud_api_id']  # userId
+SOLISCLOUD_API_SECRET = api_secrets['soliscloud_api_secret'].encode('utf-8')
+SOLISCLOUD_API_URL = api_secrets['soliscloud_api_url']
+PVOUTPUT_API_KEY = api_secrets['pvoutput_api_key']
+PVOUTPUT_SYSTEM_ID = api_secrets['pvoutput_system_id']
 
 # == Constants ===============================================================
 VERB = "POST"
@@ -142,6 +147,7 @@ def main_loop():
     timestamp_previous = '0'
     hi_res_watthour_today = 0
     while True:
+        time.sleep(60)  # wait 1 minute before checking again
         datetime_now = datetime.now()
         # only check between 5 and 23 hours
         if datetime_now.hour < 5 or datetime_now.hour > 22:
@@ -193,8 +199,6 @@ def main_loop():
             pvoutput_post(
                 prefix, datetime_current, hi_res_watthour_today, watt, volt)
             timestamp_previous = timestamp_current
-
-        time.sleep(60)  # wait 1 minute before checking again
 
 
 # == MAIN ====================================================================
