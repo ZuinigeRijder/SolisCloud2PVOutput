@@ -44,8 +44,8 @@ def log(msg):
 
 
 # == post ====================================================================
-def post(url, data, headers) -> str:
-    """post data and header and handle errors"""
+def execute_request(url, data, headers) -> str:
+    """execute request and handle errors"""
     post_data = data.encode("utf-8")
     request = Request(url, data=post_data, headers=headers)
     errorstring = ''
@@ -66,9 +66,9 @@ def post(url, data, headers) -> str:
     return 'ERROR'
 
 
-# == solis_cloud_post ========================================================
-def solis_cloud_post(url_part, data) -> str:
-    """post solis cloud data and encode/authorize"""
+# == get_solis_cloud_data ====================================================
+def get_solis_cloud_data(url_part, data) -> str:
+    """get solis cloud data"""
     md5 = base64.b64encode(
         hashlib.md5(data.encode('utf-8')).digest()).decode('utf-8')
     while True:
@@ -86,20 +86,23 @@ def solis_cloud_post(url_part, data) -> str:
             'API ' + SOLISCLOUD_API_ID + ':' +
             base64.b64encode(hmac_obj.digest()).decode('utf-8')
         )
-        header = {
+        headers = {
             'Content-MD5': md5,
             'Content-Type': CONTENT_TYPE,
             'Date': now,
             'Authorization': authorization
         }
-        content = post(SOLISCLOUD_API_URL+url_part, data, header)
+        content = execute_request(SOLISCLOUD_API_URL+url_part, data, headers)
+        # log(SOLISCLOUD_API_URL+url_part + "->" + content)
         if content != 'ERROR':
             return content
 
 
-# == pvoutput_post ===========================================================
-def pvoutput_post(prefix, datetime_current, watthour_today, watt, volt) -> str:
-    """pvoutput post data with the provided parameters"""
+# == send_pvoutput_data ======================================================
+def send_pvoutput_data(
+    prefix, datetime_current, watthour_today, watt, volt
+) -> str:
+    """send pvoutput data with the provided parameters"""
     pvoutput_string = (
         'data=' + TODAY +
         ',' + datetime_current.strftime("%H:%M") +
@@ -116,9 +119,11 @@ def pvoutput_post(prefix, datetime_current, watthour_today, watt, volt) -> str:
     }
     retry = 0
     while True:
-        retry = retry + 1
-        content = post(PVOUTPUT_ADD_URL, pvoutput_string, headers)
-        if content != 'ERROR' or retry > 10:
+        retry += 1
+        content = execute_request(PVOUTPUT_ADD_URL, pvoutput_string, headers)
+        if content != 'ERROR' or retry > 30:
+            if content == 'ERROR':
+                log('ERROR: number of retries exceeded')
             return content
 
 
@@ -126,17 +131,18 @@ def pvoutput_post(prefix, datetime_current, watthour_today, watt, volt) -> str:
 def get_inverter_list_body() -> str:
     """get inverter list body"""
     body = '{"userid":"' + SOLISCLOUD_API_ID + '"}'
-    content = solis_cloud_post(USER_STATION_LIST, body)
+    content = get_solis_cloud_data(USER_STATION_LIST, body)
     station_info = json.loads(content)['data']['page']['records'][0]
     station_id = station_info['id']
 
     body = '{"stationId":"' + station_id + '"}'
-    content = solis_cloud_post(INVERTER_LIST, body)
+    content = get_solis_cloud_data(INVERTER_LIST, body)
     inverter_info = json.loads(content)['data']['page']['records'][0]
     inverter_id = inverter_info['id']
     inverter_sn = inverter_info['sn']
 
     body = '{"id":"' + inverter_id + '","sn":"' + inverter_sn + '"}'
+    log('body: ' + body)
     return body
 
 
@@ -154,7 +160,7 @@ def main_loop():
             log('Outside solar generation hours (5..23)')
             sys.exit('Exiting program to start fresh tomorrow')
 
-        content = solis_cloud_post(INVERTER_DETAIL, inverter_detail_body)
+        content = get_solis_cloud_data(INVERTER_DETAIL, inverter_detail_body)
         inverter_detail = json.loads(content)['data']
         # json_formatted_str = json.dumps(inverter_detail, indent=2)
         # print(json_formatted_str)
@@ -196,7 +202,7 @@ def main_loop():
                         # hi_res_total_watthour was too high
                         hi_res_watthour_today = watthour_today + 99
 
-            pvoutput_post(
+            send_pvoutput_data(
                 prefix, datetime_current, hi_res_watthour_today, watt, volt)
             timestamp_previous = timestamp_current
 
