@@ -99,18 +99,9 @@ def get_solis_cloud_data(url_part, data) -> str:
 
 
 # == send_pvoutput_data ======================================================
-def send_pvoutput_data(
-    prefix, datetime_current, watthour_today, watt, volt
-) -> str:
+def send_pvoutput_data(pvoutput_string) -> str:
     """send pvoutput data with the provided parameters"""
-    pvoutput_string = (
-        'data=' + TODAY +
-        ',' + datetime_current.strftime("%H:%M") +
-        ',' + str(watthour_today) +
-        ',' + str(watt) +
-        ',-1,-1,,' + str(volt)
-    )
-    log(prefix + ' ' + pvoutput_string)
+    log(pvoutput_string)
     headers = {
         'X-Pvoutput-Apikey': PVOUTPUT_API_KEY,
         'X-Pvoutput-SystemId': PVOUTPUT_SYSTEM_ID,
@@ -175,10 +166,6 @@ def main_loop():
         watthour_today = round(inverter_detail['eToday'] * 1000)
         inverter_temp = inverter_detail['inverterTemperature']
         ac_volt = inverter_detail['uAc1']
-        prefix = (
-            'inverter temperature: ' + str(inverter_temp) +
-            ', AC voltage: ' + str(ac_volt)
-        )
 
         if timestamp_previous == '0':
             hi_res_watthour_today = watthour_today
@@ -202,8 +189,17 @@ def main_loop():
                         # hi_res_total_watthour was too high
                         hi_res_watthour_today = watthour_today + 99
 
-            send_pvoutput_data(
-                prefix, datetime_current, hi_res_watthour_today, watt, volt)
+            pvoutput_string = (
+                'data=' + TODAY +  # Date
+                ',' + datetime_current.strftime("%H:%M") +  # Time
+                ',' + str(watthour_today) +  # Energy Generation
+                ',' + str(watt) +  # Power Generation
+                ',-1' +  # no Energy Consumption
+                ',' + str(ac_volt) +  # Power generation used for AC voltage
+                ',' + str(inverter_temp) +  # inverter temp iso outside temp
+                ',' + str(volt)  # Voltage
+            )
+            send_pvoutput_data(pvoutput_string)
             timestamp_previous = timestamp_current
 
 

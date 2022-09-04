@@ -8,8 +8,8 @@ The soliscloud_to_pvoutput.py script will get the first station id with the secr
 * DC PV voltage (assuming no more than 4 strings)
 * watt (current)
 * watthour today
-* inverter temperature (logged only)
-* AC voltage (assuming 1 phase system, logged only)
+* inverter temperature (instead of outside temperature, you can still overrule with weather device)
+* AC voltage (assuming 1 phase system, used "Power Consumption" field, so read "AC Volt" for the "Power Used" column of PVOutput and ignore "Energy Used" column)
 
 This information is used to compute the new information to be send to PVOutput, when the timestamp is changed.
 
@@ -81,10 +81,11 @@ Log files are written in the home subdirectory solis
 ```
 20220730 23:00:17: Outside solar generation hours (5..23)
 Exiting program to start fresh tomorrow
-20220731 06:34:07: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:33,0,20,-1,-1,,77.4
-20220731 06:49:17: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:48,5,20,-1,-1,,82.0
-20220731 06:54:20: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:53,6,20,-1,-1,,111.0
-20220731 06:59:24: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,06:58,7,20,-1,-1,,170.1
-20220731 07:04:28: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,07:03,8,20,-1,-1,,142.0
-20220731 07:09:30: inverter temperature: 36.1, AC voltage: 237.2 data=20220731,07:08,9,20,-1,-1,,143.6
+....
+20220904 17:52:32: data=20220904,17:50,7600,90,-1,227.7,36.5,161.5
+20220904 17:56:34: data=20220904,17:55,7600,100,-1,227.3,36.4,161.5
+20220904 18:01:42: data=20220904,18:00,7600,100,-1,226.7,36.2,161.4
+20220904 18:05:46: data=20220904,18:05,7700,100,-1,226.9,36.1,161.4
+20220904 18:10:51: data=20220904,18:10,7700,110,-1,227.4,36.1,161.4
+
 ```
