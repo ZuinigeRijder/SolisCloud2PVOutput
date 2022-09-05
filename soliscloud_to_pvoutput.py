@@ -195,7 +195,7 @@ def main_loop():
             pvoutput_string = (
                 'data=' + TODAY +  # Date
                 ',' + datetime_current.strftime("%H:%M") +  # Time
-                ',' + str(watthour_today) +  # Energy Generation
+                ',' + str(hi_res_watthour_today) +  # Energy Generation
                 ',' + str(watt) +  # Power Generation
                 ',-1' +  # no Energy Consumption
                 ',' + str(ac_volt) +  # Power generation used for AC voltage
