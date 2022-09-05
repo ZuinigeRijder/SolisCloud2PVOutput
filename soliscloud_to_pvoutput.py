@@ -165,7 +165,10 @@ def main_loop():
         watt = round(inverter_detail['pac'] * 1000)
         watthour_today = round(inverter_detail['eToday'] * 1000)
         inverter_temp = inverter_detail['inverterTemperature']
-        ac_volt = inverter_detail['uAc1']
+        ac_volt = max(
+            max(inverter_detail['uAc1'], inverter_detail['uAc2']),
+            inverter_detail['uAc3']
+        )
 
         if timestamp_previous == '0':
             hi_res_watthour_today = watthour_today

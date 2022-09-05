@@ -9,7 +9,7 @@ The soliscloud_to_pvoutput.py script will get the first station id with the secr
 * watt (current)
 * watthour today
 * inverter temperature (instead of outside temperature, you can still overrule with weather device)
-* AC voltage (assuming 1 phase system, used "Power Consumption" field, so read "AC Volt" for the "Power Used" column of PVOutput and ignore "Energy Used" column)
+* AC voltage (max voltage of 3 phases, used "Power Consumption" field, so read "AC Volt" for the "Power Used" column of PVOutput and ignore "Energy Used" column)
 
 This information is used to compute the new information to be send to PVOutput, when the timestamp is changed.
 
