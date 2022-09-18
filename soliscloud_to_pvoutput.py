@@ -10,6 +10,8 @@ import json
 import time
 import sys
 import configparser
+import socket
+import traceback
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, Request
@@ -50,7 +52,7 @@ def execute_request(url, data, headers) -> str:
     request = Request(url, data=post_data, headers=headers)
     errorstring = ''
     try:
-        with urlopen(request, timeout=10) as response:
+        with urlopen(request, timeout=30) as response:
             body = response.read()
             content = body.decode("utf-8")
             return content
@@ -60,6 +62,11 @@ def execute_request(url, data, headers) -> str:
         errorstring = str(error.reason)
     except TimeoutError:
         errorstring = 'Request timed out'
+    except socket.timeout:
+        errorstring = 'Socket timed out'
+    except Exception as ex:  # pylint: disable=broad-except
+        errorstring = 'urlopen exception: ' + str(ex)
+        traceback.print_exc()
 
     log('ERROR: ' + url + ' -> ' + errorstring)
     time.sleep(60)  # retry after 1 minute
