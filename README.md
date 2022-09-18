@@ -1,5 +1,3 @@
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=for-the-badge)](https://github.com/hacs/integration)
-
 # SolisCloud to PVOutput
 Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal update to PVOutput portal. 
 
