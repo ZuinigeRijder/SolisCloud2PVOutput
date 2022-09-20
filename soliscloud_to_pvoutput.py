@@ -190,6 +190,10 @@ def main_loop():
                 elapsed_minutes = round(
                     (int(timestamp_current) - int(timestamp_previous)) / 60000
                 )
+                if elapsed_minutes <= 0:
+                    log(f"TIMESTAMPERROR: {elapsed_minutes}, timestamp: {timestamp_current}, timestamp_previous: {timestamp_previous}")  # noqa
+                    elapsed_minutes = 1
+
                 # compute hiResTotalWattHour with current watts/elapsed minutes
                 hi_res_watthour_today += int(watt/(60/elapsed_minutes))
                 if hi_res_watthour_today < watthour_today:
