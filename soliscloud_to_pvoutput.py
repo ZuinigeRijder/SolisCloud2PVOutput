@@ -32,8 +32,8 @@ PVOUTPUT_SYSTEM_ID = api_secrets['pvoutput_system_id']
 VERB = "POST"
 CONTENT_TYPE = "application/json"
 USER_STATION_LIST = '/v1/api/userStationList'
-INVERTER_LIST = '/v1/api/inveterList'
-INVERTER_DETAIL = '/v1/api/inveterDetail'
+INVERTER_LIST = '/v1/api/inverterList'
+INVERTER_DETAIL = '/v1/api/inverterDetail'
 PVOUTPUT_ADD_URL = 'http://pvoutput.org/service/r2/addbatchstatus.jsp'
 
 TODAY = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
