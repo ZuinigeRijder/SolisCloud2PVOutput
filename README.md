@@ -61,7 +61,7 @@ Steps:
 * create a directory solis in your home directory
 * copy solis.sh, soliscloud_to_pvoutput.py and soliscloud_to_pvoutput.cfg in this solis directory
 * change inside soliscloud_to_pvoutput.cfg the API secrets
-* chmod + x solis.sh
+* chmod +x solis.sh
 * add the following line in your crontab -e:
 
 ```
