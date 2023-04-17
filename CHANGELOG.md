@@ -1,3 +1,13 @@
+<a name="R1.7.0"></a>
+# [Use Python logging, with a config file close to the previous format. (R1.7.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.7.0) - 17 Apr 2023
+
+Externalise the basic logging configuration.
+https://github.com/ZuinigeRijder/SolisCloud2PVOutput/pull/16
+
+
+[Changes][R1.7.0]
+
+
 <a name="R.16.0"></a>
 # [Changed from API1.1.1 to API1.2 (R.16.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R.16.0) - 29 Nov 2022
 
@@ -69,6 +79,7 @@ Change your API SECRETS in the configuration file "soliscloud_to_pvoutput.cfg". 
 [Changes][R1.0.0]
 
 
+[R1.7.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R.16.0...R1.7.0
 [R.16.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.5.0...R.16.0
 [R1.5.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.4.0...R1.5.0
 [R1.4.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.3.0...R1.4.0
