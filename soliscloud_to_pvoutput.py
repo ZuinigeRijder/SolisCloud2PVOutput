@@ -12,6 +12,9 @@ import sys
 import configparser
 import socket
 import traceback
+import logging
+import logging.config
+
 from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, Request
@@ -38,12 +41,7 @@ PVOUTPUT_ADD_URL = 'http://pvoutput.org/service/r2/addbatchstatus.jsp'
 
 TODAY = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
 
-
-# == log =====================================================================
-def log(msg):
-    """log a message prefixed with a date/time format yyyymmdd hh:mm:ss"""
-    print(TODAY + datetime.now().strftime(" %H:%M:%S") + ': ' + msg)
-
+logging.config.fileConfig("logging_config.ini")
 
 # == post ====================================================================
 def execute_request(url, data, headers) -> str:
@@ -68,7 +66,7 @@ def execute_request(url, data, headers) -> str:
         errorstring = 'urlopen exception: ' + str(ex)
         traceback.print_exc()
 
-    log('ERROR: ' + url + ' -> ' + errorstring)
+    logging.error(url + " -> " + errorstring)
     time.sleep(60)  # retry after 1 minute
     return 'ERROR'
 
@@ -108,7 +106,7 @@ def get_solis_cloud_data(url_part, data) -> str:
 # == send_pvoutput_data ======================================================
 def send_pvoutput_data(pvoutput_string) -> str:
     """send pvoutput data with the provided parameters"""
-    log(pvoutput_string)
+    loggging.info(pvoutput_string)
     headers = {
         'X-Pvoutput-Apikey': PVOUTPUT_API_KEY,
         'X-Pvoutput-SystemId': PVOUTPUT_SYSTEM_ID,
@@ -119,9 +117,9 @@ def send_pvoutput_data(pvoutput_string) -> str:
     while True:
         retry += 1
         content = execute_request(PVOUTPUT_ADD_URL, pvoutput_string, headers)
-        if content != 'ERROR' or retry > 30:
-            if content == 'ERROR':
-                log('ERROR: number of retries exceeded')
+        if content != "ERROR" or retry > 30:
+            if content == "ERROR":
+                logging.error("number of retries exceeded")
             return content
 
 
@@ -140,7 +138,7 @@ def get_inverter_list_body() -> str:
     inverter_sn = inverter_info['sn']
 
     body = '{"id":"' + inverter_id + '","sn":"' + inverter_sn + '"}'
-    log('body: ' + body)
+    logging.info("body: " + body)
     return body
 
 
@@ -155,7 +153,7 @@ def main_loop():
         datetime_now = datetime.now()
         # only check between 5 and 23 hours
         if datetime_now.hour < 5 or datetime_now.hour > 22:
-            log('Outside solar generation hours (5..23)')
+            logging.info("Outside solar generation hours (5..23)")
             sys.exit('Exiting program to start fresh tomorrow')
 
         content = get_solis_cloud_data(INVERTER_DETAIL, inverter_detail_body)
@@ -191,7 +189,7 @@ def main_loop():
                     (int(timestamp_current) - int(timestamp_previous)) / 60000
                 )
                 if elapsed_minutes <= 0:
-                    log(f"TIMESTAMPERROR: {elapsed_minutes}, timestamp: {timestamp_current}, timestamp_previous: {timestamp_previous}")  # noqa
+                    logging.error(f"TIMESTAMPERROR: {elapsed_minutes}, timestamp: {timestamp_current}, timestamp_previous: {timestamp_previous}")  # noqa
                     elapsed_minutes = 1
 
                 # compute hiResTotalWattHour with current watts/elapsed minutes
