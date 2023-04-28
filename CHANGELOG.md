@@ -1,3 +1,15 @@
+<a name="R1.8.0"></a>
+# [fix error and warnings slipped in previous pull request (R1.8.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.8.0) - 28 Apr 2023
+
+Last Pull Request there was an error in the logging call on line 109: logg**g**ing
+
+https://github.com/ZuinigeRijder/SolisCloud2PVOutput/pull/16
+
+Fixed error and also solved warnings.
+
+[Changes][R1.8.0]
+
+
 <a name="R1.7.0"></a>
 # [Use Python logging, with a config file close to the previous format. (R1.7.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.7.0) - 17 Apr 2023
 
@@ -79,6 +91,7 @@ Change your API SECRETS in the configuration file "soliscloud_to_pvoutput.cfg". 
 [Changes][R1.0.0]
 
 
+[R1.8.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.7.0...R1.8.0
 [R1.7.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R.16.0...R1.7.0
 [R.16.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.5.0...R.16.0
 [R1.5.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.4.0...R1.5.0
