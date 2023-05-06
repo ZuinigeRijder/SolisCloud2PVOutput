@@ -1,3 +1,21 @@
+<a name="R1.9.0"></a>
+# [added option to send to pvoutput and/or to domoticz (R1.9.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.9.0) - 06 May 2023
+
+ Added option to send to pvoutput and/or to domoticz.
+Please make sure to add and configure new configuration lines to soliscloud_to_pvoutput.cfg if you had already installed SolisCloud2PVOuptup before:
+* send_to_pvoutput = True
+* [Domoticz]
+* send_to_domoticz = False
+* domot_url = http://192.168.0.222:8081
+* domot_power_generated_id = 214
+* domot_ac_volt_id = 215
+* domot_inverter_temp_id = 0
+* domot_volt_id = 0
+
+
+[Changes][R1.9.0]
+
+
 <a name="R1.8.0"></a>
 # [fix error and warnings slipped in previous pull request (R1.8.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.8.0) - 28 Apr 2023
 
@@ -91,6 +109,7 @@ Change your API SECRETS in the configuration file "soliscloud_to_pvoutput.cfg". 
 [Changes][R1.0.0]
 
 
+[R1.9.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.8.0...R1.9.0
 [R1.8.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.7.0...R1.8.0
 [R1.7.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R.16.0...R1.7.0
 [R.16.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.5.0...R.16.0
