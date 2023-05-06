@@ -25,11 +25,21 @@ parser.read("soliscloud_to_pvoutput.cfg")
 api_secrets = dict(parser.items("api_secrets"))
 
 # == API Secrets, fill in yours in soliscloud_to_pvoutput.cfg ================
+SEND_TO_PVOUTPUT = api_secrets["send_to_pvoutput"].lower() == "true"
 SOLISCLOUD_API_ID = api_secrets["soliscloud_api_id"]  # userId
 SOLISCLOUD_API_SECRET = api_secrets["soliscloud_api_secret"].encode("utf-8")
 SOLISCLOUD_API_URL = api_secrets["soliscloud_api_url"]
 PVOUTPUT_API_KEY = api_secrets["pvoutput_api_key"]
 PVOUTPUT_SYSTEM_ID = api_secrets["pvoutput_system_id"]
+
+# == domoticz info, fill in yours in soliscloud_to_pvoutput.cfg ===========
+domoticz_info = dict(parser.items("Domoticz"))
+SEND_TO_DOMOTICZ = domoticz_info["send_to_domoticz"].lower() == "true"
+DOMOTICZ_URL = domoticz_info["domot_url"]
+DOMOTICZ_POWER_GENERATED_ID = domoticz_info["domot_power_generated_id"]
+DOMOTICZ_AC_VOLT_ID = domoticz_info["domot_ac_volt_id"]
+DOMOTICZ_INVERTER_TEMP_ID = domoticz_info["domot_inverter_temp_id"]
+DOMOTICZ_VOLT_ID = domoticz_info["domot_volt_id"]
 
 # == Constants ===============================================================
 VERB = "POST"
@@ -39,6 +49,7 @@ INVERTER_LIST = "/v1/api/inverterList"
 INVERTER_DETAIL = "/v1/api/inverterDetail"
 PVOUTPUT_ADD_URL = "http://pvoutput.org/service/r2/addbatchstatus.jsp"
 
+
 TODAY = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
 
 logging.config.fileConfig("logging_config.ini")
@@ -47,13 +58,17 @@ logging.config.fileConfig("logging_config.ini")
 # == post ====================================================================
 def execute_request(url, data, headers) -> str:
     """execute request and handle errors"""
-    post_data = data.encode("utf-8")
-    request = Request(url, data=post_data, headers=headers)
+    if data != "":
+        post_data = data.encode("utf-8")
+        request = Request(url, data=post_data, headers=headers)
+    else:
+        request = Request(url)
     errorstring = ""
     try:
         with urlopen(request, timeout=30) as response:
             body = response.read()
             content = body.decode("utf-8")
+            logging.debug(content)
             return content
     except HTTPError as error:
         errorstring = str(error.status) + ": " + error.reason
@@ -118,6 +133,27 @@ def send_pvoutput_data(pvoutput_string) -> str:
     while True:
         retry += 1
         content = execute_request(PVOUTPUT_ADD_URL, pvoutput_string, headers)
+        if content != "ERROR" or retry > 30:
+            if content == "ERROR":
+                logging.error("number of retries exceeded")
+            return content
+
+
+# == send to Domoticz ========================================================
+def send_to_domoticz(idx, value):
+    """send_to_Domoticz"""
+    url = (
+        DOMOTICZ_URL
+        + "/json.htm?type=command&param=udevice&idx="
+        + idx
+        + "&svalue="
+        + value
+    )
+    logging.info(url)
+    retry = 0
+    while True:
+        retry += 1
+        content = execute_request(url, "", "")
         if content != "ERROR" or retry > 30:
             if content == "ERROR":
                 logging.error("number of retries exceeded")
@@ -207,24 +243,38 @@ def main_loop():
                         # hi_res_total_watthour was too high
                         hi_res_watthour_today = watthour_today + 99
 
-            pvoutput_string = (
-                "data="
-                + TODAY
-                + ","  # Date
-                + datetime_current.strftime("%H:%M")
-                + ","  # Time
-                + str(hi_res_watthour_today)
-                + ","  # Energy Generation
-                + str(watt)
-                + ",-1"  # Power Generation
-                + ","  # no Energy Consumption
-                + str(ac_volt)
-                + ","  # Power generation used for AC voltage
-                + str(inverter_temp)
-                + ","  # inverter temp iso outside temp
-                + str(volt)  # Voltage
-            )
-            send_pvoutput_data(pvoutput_string)
+            if SEND_TO_PVOUTPUT:
+                pvoutput_string = (
+                    "data="
+                    + TODAY
+                    + ","  # Date
+                    + datetime_current.strftime("%H:%M")
+                    + ","  # Time
+                    + str(hi_res_watthour_today)
+                    + ","  # Energy Generation
+                    + str(watt)
+                    + ",-1"  # Power Generation
+                    + ","  # no Energy Consumption
+                    + str(ac_volt)
+                    + ","  # Power generation used for AC voltage
+                    + str(inverter_temp)
+                    + ","  # inverter temp iso outside temp
+                    + str(volt)  # Voltage
+                )
+                send_pvoutput_data(pvoutput_string)
+
+            if SEND_TO_DOMOTICZ:
+                if DOMOTICZ_POWER_GENERATED_ID:
+                    send_to_domoticz(
+                        str(DOMOTICZ_POWER_GENERATED_ID),
+                        str(watt) + ";" + str(hi_res_watthour_today),
+                    )
+                if DOMOTICZ_AC_VOLT_ID != "0":
+                    send_to_domoticz(str(DOMOTICZ_AC_VOLT_ID), str(ac_volt))
+                if DOMOTICZ_INVERTER_TEMP_ID != "0":
+                    send_to_domoticz(str(DOMOTICZ_INVERTER_TEMP_ID), str(inverter_temp))
+                if DOMOTICZ_VOLT_ID != "0":
+                    send_to_domoticz(str(DOMOTICZ_AC_VOLT_ID), str(volt))
             timestamp_previous = timestamp_current
 
 

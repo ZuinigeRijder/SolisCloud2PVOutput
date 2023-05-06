@@ -1,5 +1,5 @@
-# SolisCloud to PVOutput
-Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal update to PVOutput portal. 
+# SolisCloud to PVOutput and/or Domoticz
+Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal update to PVOutput portal and/or Domoticz.
 
 The soliscloud_to_pvoutput.py script will get the first station id with the secrets of SolisCloud (see next section). Thereafter it will get the first inverter id and serial number. Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
@@ -9,10 +9,10 @@ The soliscloud_to_pvoutput.py script will get the first station id with the secr
 * inverter temperature (instead of outside temperature, you can still overrule with weather device)
 * AC voltage (max voltage of 3 phases, used "Power Consumption" field, so read "AC Volt" for the "Power Used" column of PVOutput and ignore "Energy Used" column)
 
-This information is used to compute the new information to be send to PVOutput, when the timestamp is changed.
+This information is used to compute the new information to be send to PVOutput and/or Domoticz, when the timestamp is changed.
 
 Notes
-* only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput
+* only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput and/or Domoticz
 * the script will exit outside 5 and 23
 * Each new day the "watthour today" starts with 0
 * Because the resolution of the SolisCloud watthour is in 100 Watt, a higher resolution is computed with current Watt
@@ -42,12 +42,19 @@ The python script requires a PVOutput API_KEY and SYSTEM_ID to function.
 * Save your settings
 
 ## Configuration
-Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets:
+Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets and domoticz configuration, including if you want to send to PVOutput, Domoticz or both. By default only output is send to PVOutput:
+* send_to_pvoutput = True
 * soliscloud_api_id = 1300386381123456789
 * soliscloud_api_secret = 304abf2bd8a44242913d704123456789
 * soliscloud_api_url = https://www.soliscloud.com:13333
 * pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
 * pvoutput_system_id = 12345
+* send_to_domoticz = False
+* domot_url = http://192.168.0.222:8081
+* domot_power_generated_id = 214
+* domot_ac_volt_id = 215
+* domot_inverter_temp_id = 0
+* domot_volt_id = 0
 
 ## Usage
 ### Windows 10
