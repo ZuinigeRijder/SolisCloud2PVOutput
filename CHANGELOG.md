@@ -1,3 +1,12 @@
+<a name="R1.9.1"></a>
+# [minor domoticz fixes/defaults (R1.9.1)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.9.1) - 07 May 2023
+
+- Check for DOMOTICZ_POWER_GENERATED_ID not zero
+- Default domoticz id's are zero (so id is not send)
+
+[Changes][R1.9.1]
+
+
 <a name="R1.9.0"></a>
 # [added option to send to pvoutput and/or to domoticz (R1.9.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.9.0) - 06 May 2023
 
@@ -109,6 +118,7 @@ Change your API SECRETS in the configuration file "soliscloud_to_pvoutput.cfg". 
 [Changes][R1.0.0]
 
 
+[R1.9.1]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.9.0...R1.9.1
 [R1.9.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.8.0...R1.9.0
 [R1.8.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.7.0...R1.8.0
 [R1.7.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R.16.0...R1.7.0
