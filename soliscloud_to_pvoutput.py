@@ -264,7 +264,7 @@ def main_loop():
                 send_pvoutput_data(pvoutput_string)
 
             if SEND_TO_DOMOTICZ:
-                if DOMOTICZ_POWER_GENERATED_ID:
+                if DOMOTICZ_POWER_GENERATED_ID != 0:
                     send_to_domoticz(
                         str(DOMOTICZ_POWER_GENERATED_ID),
                         str(watt) + ";" + str(hi_res_watthour_today),

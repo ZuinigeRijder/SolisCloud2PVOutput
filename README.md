@@ -51,8 +51,8 @@ Change in soliscloud_to_pvoutput.cfg the following lines with your above obtaine
 * pvoutput_system_id = 12345
 * send_to_domoticz = False
 * domot_url = http://192.168.0.222:8081
-* domot_power_generated_id = 214
-* domot_ac_volt_id = 215
+* domot_power_generated_id = 0
+* domot_ac_volt_id = 0
 * domot_inverter_temp_id = 0
 * domot_volt_id = 0
 
