@@ -274,7 +274,7 @@ def main_loop():
                 if DOMOTICZ_INVERTER_TEMP_ID != "0":
                     send_to_domoticz(str(DOMOTICZ_INVERTER_TEMP_ID), str(inverter_temp))
                 if DOMOTICZ_VOLT_ID != "0":
-                    send_to_domoticz(str(DOMOTICZ_AC_VOLT_ID), str(volt))
+                    send_to_domoticz(str(DOMOTICZ_VOLT_ID), str(volt))
             timestamp_previous = timestamp_current
 
 
