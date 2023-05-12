@@ -1,7 +1,21 @@
-# SolisCloud to PVOutput and/or Domoticz
-Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal update to PVOutput portal and/or Domoticz.
+- [SolisCloud to PVOutput and/or Domoticz](#soliscloud-to-pvoutput-andor-domoticz)
+  - [SolisCloud](#soliscloud)
+  - [PVOutput](#pvoutput)
+  - [Domoticz](#domoticz)
+  - [Configuration](#configuration)
+  - [Configuration with multiple inverters in one SolisCloud station](#configuration-with-multiple-inverters-in-one-soliscloud-station)
+  - [Combined data of two PVOutput accounts/inverters](#combined-data-of-two-pvoutput-accountsinverters)
+  - [Usage](#usage)
+    - [Windows 10](#windows-10)
+    - [Raspberry pi](#raspberry-pi)
+    - [Raspberry pi Configuration](#raspberry-pi-configuration)
+    - [log files](#log-files)
+    - [Example output solis.log](#example-output-solislog)
 
-The soliscloud_to_pvoutput.py script will get the first station id with the secrets of SolisCloud (see next section). Thereafter it will get the first inverter id and serial number. Then in an endless loop the inverter details are fetched and the following information is used:
+# SolisCloud to PVOutput and/or Domoticz
+Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal inverter update to PVOutput portal and/or Domoticz.
+
+The soliscloud_to_pvoutput.py script will get the first station id with the secrets of SolisCloud (see next section). Thereafter it will get the inverter id and serial number via the configured SOLISCLOUD_INVERTER_INDEX (default the first inverter). Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
 * DC PV voltage (assuming no more than 4 strings)
 * watt (current)
@@ -16,7 +30,7 @@ Notes
 * the script will exit outside 5 and 23
 * Each new day the "watthour today" starts with 0
 * Because the resolution of the SolisCloud watthour is in 100 Watt, a higher resolution is computed with current Watt
-* if you have more than 1 station/inverter, more than 4 strings or a 3 phase inverter, you need to adapt the script
+* if you have more than 1 station, more than 4 strings or a 3 phase inverter, you need to adapt the script
 
 ## SolisCloud
 [SolisCloud](https://www.soliscloud.com/) is the next generation Portal for Solis branded PV systems from Ginlong.
@@ -41,12 +55,22 @@ The python script requires a PVOutput API_KEY and SYSTEM_ID to function.
 * Make a note of your System Id
 * Save your settings
 
+## Domoticz
+[Domoticz](https://www.domoticz.com/) is a very light weight home automation system that lets you monitor and configure miscellaneous devices, including lights, switches, various sensors/meters like temperature, rainfall, wind, ultraviolet (UV) radiation, electricity usage/production, gas consumption, water consumption and many more. Notifications/alerts can be sent to any mobile device.
+
+If you want to know how to configure in Domoticz your inverter, see [this discussion](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/18).
+
+![alt text](https://user-images.githubusercontent.com/17342657/237064859-b7bcb83a-a753-4399-b60d-801bdd2741a3.png)
+
+![alt text](https://user-images.githubusercontent.com/17342657/237064582-59fcd74b-5b04-4578-98a4-18819bf8482f.png)
+
 ## Configuration
 Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets and domoticz configuration, including if you want to send to PVOutput, Domoticz or both. By default only output is send to PVOutput:
 * send_to_pvoutput = True
 * soliscloud_api_id = 1300386381123456789
 * soliscloud_api_secret = 304abf2bd8a44242913d704123456789
 * soliscloud_api_url = https://www.soliscloud.com:13333
+* soliscloud_inverter_index = 0
 * pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
 * pvoutput_system_id = 12345
 * send_to_domoticz = False
@@ -55,6 +79,26 @@ Change in soliscloud_to_pvoutput.cfg the following lines with your above obtaine
 * domot_ac_volt_id = 0
 * domot_inverter_temp_id = 0
 * domot_volt_id = 0
+
+## Configuration with multiple inverters in one SolisCloud station
+
+Make 2 PVOutput accounts (you need 2 email addresses) for each inverter a separate PVOutput account. Make sure to configure the PVOutput accounts and get the PVOutput API keys.
+
+The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate inverter and send the output to a appropriate PVOutput account as target.
+
+Create two directories, copy the SolisCloud2PVOutput files to each directory and configure in each directory soliscloud_to_pvoutput.cfg:
+- solis
+- solis2
+
+In solis2 directory you change the following:
+- modify soliscloud_to_pvoutput.cfg to point the second PVOutput account secrets and change the soliscloud_inverter_index to 1 (to get the data of the second inverter)
+- rename solis.sh to solis2.sh and modify solis2.sh to go to directory solis2 (line 9: cd ~/solis2)
+
+Have two cronrabs running (for solis.sh and solis2.sh)
+
+## Combined data of two PVOutput accounts/inverters
+
+if you also want the combined data of the two inverters, use a third PVOutput account (yet another email address) and use my python tool [CombinePVOutputSystems](https://github.com/ZuinigeRijder/CombinePVOutputSystems#combine-pvoutput-systems).
 
 ## Usage
 ### Windows 10

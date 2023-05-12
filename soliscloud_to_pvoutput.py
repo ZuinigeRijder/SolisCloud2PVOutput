@@ -29,6 +29,7 @@ SEND_TO_PVOUTPUT = api_secrets["send_to_pvoutput"].lower() == "true"
 SOLISCLOUD_API_ID = api_secrets["soliscloud_api_id"]  # userId
 SOLISCLOUD_API_SECRET = api_secrets["soliscloud_api_secret"].encode("utf-8")
 SOLISCLOUD_API_URL = api_secrets["soliscloud_api_url"]
+SOLISCLOUD_INVERTER_INDEX = int(api_secrets["soliscloud_inverter_index"].strip())
 PVOUTPUT_API_KEY = api_secrets["pvoutput_api_key"]
 PVOUTPUT_SYSTEM_ID = api_secrets["pvoutput_system_id"]
 
@@ -170,7 +171,9 @@ def get_inverter_list_body() -> str:
 
     body = '{"stationId":"' + station_id + '"}'
     content = get_solis_cloud_data(INVERTER_LIST, body)
-    inverter_info = json.loads(content)["data"]["page"]["records"][0]
+    inverter_info = json.loads(content)["data"]["page"]["records"][
+        SOLISCLOUD_INVERTER_INDEX
+    ]
     inverter_id = inverter_info["id"]
     inverter_sn = inverter_info["sn"]
 
