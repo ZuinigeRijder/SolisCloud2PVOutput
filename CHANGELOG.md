@@ -1,3 +1,57 @@
+<a name="R1.11.0"></a>
+# [Added support for multiple inverters (R1.11.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.11.0) - 12 May 2023
+
+See this [discussion](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/23).
+
+Added configuration item (make sure to add this new configuration item to soliscloud_to_pvoutput.cfg if you have an existing configuration) :
+- soliscloud_inverter_index = 0
+
+Added below information about multiple inverters to the README.md.
+
+
+## Domoticz
+[Domoticz](https://www.domoticz.com/) is a very light weight home automation system that lets you monitor and configure miscellaneous devices, including lights, switches, various sensors/meters like temperature, rainfall, wind, ultraviolet (UV) radiation, electricity usage/production, gas consumption, water consumption and many more. Notifications/alerts can be sent to any mobile device.
+
+If you want to know how to configure in Domoticz your inverter, see [this discussion](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/18).
+
+![alt text](https://user-images.githubusercontent.com/17342657/237064859-b7bcb83a-a753-4399-b60d-801bdd2741a3.png)
+
+![alt text](https://user-images.githubusercontent.com/17342657/237064582-59fcd74b-5b04-4578-98a4-18819bf8482f.png)
+
+## Configuration with multiple inverters in one SolisCloud station
+
+Make 2 PVOutput accounts (you need 2 email addresses) for each inverter a separate PVOutput account. Make sure to configure the PVOutput accounts and get the PVOutput API keys.
+
+The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate inverter and send the output to a appropriate PVOutput account as target.
+
+Create two directories, copy the SolisCloud2PVOutput files to each directory and configure in each directory soliscloud_to_pvoutput.cfg:
+- solis
+- solis2
+
+In solis2 directory you change the following:
+- modify soliscloud_to_pvoutput.cfg to point the second PVOutput account secrets and change the soliscloud_inverter_index to 1 (to get the data of the second inverter)
+- rename solis.sh to solis2.sh and modify solis2.sh to go to directory solis2 (line 9: cd ~/solis2)
+
+Have two cronrabs running (for solis.sh and solis2.sh)
+
+## Combined data of two PVOutput accounts/inverters
+
+if you also want the combined data of the two inverters, use a third PVOutput account (yet another email address) and use my python tool [CombinePVOutputSystems](https://github.com/ZuinigeRijder/CombinePVOutputSystems#combine-pvoutput-systems).
+
+
+
+
+[Changes][R1.11.0]
+
+
+<a name="R1.10.0"></a>
+# [Fixed DOMOTICZ Volt value (R1.10.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.10.0) - 08 May 2023
+
+https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/18#discussioncomment-5831867
+
+[Changes][R1.10.0]
+
+
 <a name="R1.9.1"></a>
 # [minor domoticz fixes/defaults (R1.9.1)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.9.1) - 07 May 2023
 
@@ -118,6 +172,8 @@ Change your API SECRETS in the configuration file "soliscloud_to_pvoutput.cfg". 
 [Changes][R1.0.0]
 
 
+[R1.11.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.10.0...R1.11.0
+[R1.10.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.9.1...R1.10.0
 [R1.9.1]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.9.0...R1.9.1
 [R1.9.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.8.0...R1.9.0
 [R1.8.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.7.0...R1.8.0
