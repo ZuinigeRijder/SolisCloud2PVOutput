@@ -2,15 +2,14 @@
   - [SolisCloud](#soliscloud)
   - [PVOutput](#pvoutput)
   - [Domoticz](#domoticz)
-  - [Configuration](#configuration)
+- [Configuration](#configuration)
+- [Usage: Windows 10](#usage-windows-10)
+- [Usage: Linux or Raspberry pi](#usage-linux-or-raspberry-pi)
+  - [Linux or Raspberry pi configuration](#linux-or-raspberry-pi-configuration)
+  - [log files](#log-files)
   - [Configuration with multiple inverters in one SolisCloud station](#configuration-with-multiple-inverters-in-one-soliscloud-station)
   - [Combined data of two PVOutput accounts/inverters](#combined-data-of-two-pvoutput-accountsinverters)
-  - [Usage](#usage)
-    - [Windows 10](#windows-10)
-    - [Raspberry pi](#raspberry-pi)
-    - [Raspberry pi Configuration](#raspberry-pi-configuration)
-    - [log files](#log-files)
-    - [Example output solis.log](#example-output-solislog)
+- [Example standard output of SolisCloud2PVoutput](#example-standard-output-of-soliscloud2pvoutput)
 
 # SolisCloud to PVOutput and/or Domoticz
 Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal inverter update to PVOutput portal and/or Domoticz.
@@ -64,7 +63,7 @@ If you want to know how to configure in Domoticz your inverter, see [this discus
 
 ![alt text](https://user-images.githubusercontent.com/17342657/237064582-59fcd74b-5b04-4578-98a4-18819bf8482f.png)
 
-## Configuration
+# Configuration
 Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets and domoticz configuration, including if you want to send to PVOutput, Domoticz or both. By default only output is send to PVOutput:
 * send_to_pvoutput = True
 * soliscloud_api_id = 1300386381123456789
@@ -80,13 +79,40 @@ Change in soliscloud_to_pvoutput.cfg the following lines with your above obtaine
 * domot_inverter_temp_id = 0
 * domot_volt_id = 0
 
+# Usage: Windows 10
+Make sure to go to the directory where soliscloud_to_pvoutput.py and soliscloud_to_pvoutput.cfg is located.
+````
+python soliscloud_to_pvoutput.py
+````
+
+# Usage: Linux or Raspberry pi
+soliscloud_to_pvoutput.py scripts runs on my Raspberry pi with Raspbian GNU/Linux 11 (bullseye).
+
+## Linux or Raspberry pi configuration
+Steps:
+* create a directory solis in your home directory
+* copy solis.sh, soliscloud_to_pvoutput.py, soliscloud_to_pvoutput.cfg and logging_config.ini in this solis directory
+* change inside soliscloud_to_pvoutput.cfg the API secrets
+* chmod +x solis.sh
+* add the following line in your crontab -e:
+
+```
+2 5 * * * ~/solis/solis.sh > /dev/null
+@reboot sleep 123 && ~/solis/solis.sh > /dev/null
+```
+
+## log files
+Log files are written in the home subdirectory solis
+* solis.log containing the data send to PVOutput (and maybe error messages)
+* solis.crontab.log containing the crontab output (normally it will say that solis.sh is running).
+
 ## Configuration with multiple inverters in one SolisCloud station
 
 Make 2 PVOutput accounts (you need 2 email addresses) for each inverter a separate PVOutput account. Make sure to configure the PVOutput accounts and get the PVOutput API keys.
 
 The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate inverter and send the output to a appropriate PVOutput account as target.
 
-Create two directories, copy the SolisCloud2PVOutput files to each directory and configure in each directory soliscloud_to_pvoutput.cfg:
+Create two directories, copy the SolisCloud2PVOutput files (soliscloud_to_pvoutput.py, soliscloud_to_pvoutput.cfg, solis.sh and logging_config.ini) to each directory and configure in each directory soliscloud_to_pvoutput.cfg:
 - solis
 - solis2
 
@@ -100,32 +126,7 @@ Have two cronrabs running (for solis.sh and solis2.sh)
 
 if you also want the combined data of the two inverters, use a third PVOutput account (yet another email address) and use my python tool [CombinePVOutputSystems](https://github.com/ZuinigeRijder/CombinePVOutputSystems#combine-pvoutput-systems).
 
-## Usage
-### Windows 10
-python soliscloud_to_pvoutput.py
-
-### Raspberry pi
-soliscloud_to_pvoutput.py scripts runs on my Raspberry pi with Raspbian GNU/Linux 11 (bullseye).
-
-### Raspberry pi Configuration
-Steps:
-* create a directory solis in your home directory
-* copy solis.sh, soliscloud_to_pvoutput.py and soliscloud_to_pvoutput.cfg in this solis directory
-* change inside soliscloud_to_pvoutput.cfg the API secrets
-* chmod +x solis.sh
-* add the following line in your crontab -e:
-
-```
-2 5 * * * ~/solis/solis.sh > /dev/null
-@reboot sleep 123 && ~/solis/solis.sh > /dev/null
-```
-
-### log files
-Log files are written in the home subdirectory solis
-* solis.log containing the data send to PVOutput (and maybe error messages)
-* solis.crontab.log containing the crontab output (normally it will say that solis.sh is running).
-
-### Example output solis.log
+# Example standard output of SolisCloud2PVoutput
 
 ```
 20220730 23:00:17: Outside solar generation hours (5..23)
