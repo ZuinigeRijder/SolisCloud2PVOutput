@@ -182,12 +182,12 @@ def get_inverter_list_body() -> str:
     return body
 
 
-# == MAIN ====================================================================
-def main_loop():
-    """main_loop"""
+# == do_work ====================================================================
+def do_work():
+    """do_work"""
     inverter_detail_body = get_inverter_list_body()
     timestamp_previous = "0"
-    hi_res_watthour_today = 0
+    solar_hi_res_watthour_today = 0
     while True:
         time.sleep(60)  # wait 1 minute before checking again
         datetime_now = datetime.now()
@@ -207,8 +207,8 @@ def main_loop():
             + inverter_detail["uPv3"]
             + inverter_detail["uPv4"]
         )
-        watt = round(inverter_detail["pac"] * 1000)
-        watthour_today = round(inverter_detail["eToday"] * 1000)
+        solar_watt = round(inverter_detail["pac"] * 1000)
+        solar_watthour_today = round(inverter_detail["eToday"] * 1000)
         inverter_temp = inverter_detail["inverterTemperature"]
         ac_volt = max(
             inverter_detail["uAc1"],
@@ -217,7 +217,7 @@ def main_loop():
         )
 
         if timestamp_previous == "0":
-            hi_res_watthour_today = watthour_today
+            solar_hi_res_watthour_today = solar_watthour_today
 
         # compute local time, soliscloud did not take care of leap year
         datetime_current = datetime.fromtimestamp(int(timestamp_current) / 1000)
@@ -238,13 +238,13 @@ def main_loop():
                     elapsed_minutes = 1
 
                 # compute hiResTotalWattHour with current watts/elapsed minutes
-                hi_res_watthour_today += int(watt / (60 / elapsed_minutes))
-                if hi_res_watthour_today < watthour_today:
-                    hi_res_watthour_today = watthour_today  # was too low
+                solar_hi_res_watthour_today += int(solar_watt / (60 / elapsed_minutes))
+                if solar_hi_res_watthour_today < solar_watthour_today:
+                    solar_hi_res_watthour_today = solar_watthour_today  # too low
                 else:
-                    if watthour_today + 100 < hi_res_watthour_today:
-                        # hi_res_total_watthour was too high
-                        hi_res_watthour_today = watthour_today + 99
+                    if solar_watthour_today + 100 < solar_hi_res_watthour_today:
+                        # too high
+                        solar_hi_res_watthour_today = solar_watthour_today + 99
 
             if SEND_TO_PVOUTPUT:
                 pvoutput_string = (
@@ -253,9 +253,9 @@ def main_loop():
                     + ","  # Date
                     + datetime_current.strftime("%H:%M")
                     + ","  # Time
-                    + str(hi_res_watthour_today)
+                    + str(solar_hi_res_watthour_today)
                     + ","  # Energy Generation
-                    + str(watt)
+                    + str(solar_watt)
                     + ",-1"  # Power Generation
                     + ","  # no Energy Consumption
                     + str(ac_volt)
@@ -270,7 +270,7 @@ def main_loop():
                 if DOMOTICZ_POWER_GENERATED_ID != 0:
                     send_to_domoticz(
                         str(DOMOTICZ_POWER_GENERATED_ID),
-                        str(watt) + ";" + str(hi_res_watthour_today),
+                        str(solar_watt) + ";" + str(solar_hi_res_watthour_today),
                     )
                 if DOMOTICZ_AC_VOLT_ID != "0":
                     send_to_domoticz(str(DOMOTICZ_AC_VOLT_ID), str(ac_volt))
@@ -279,6 +279,22 @@ def main_loop():
                 if DOMOTICZ_VOLT_ID != "0":
                     send_to_domoticz(str(DOMOTICZ_VOLT_ID), str(volt))
             timestamp_previous = timestamp_current
+
+
+def main_loop():
+    """main_loop"""
+    finished = False
+    while not finished:
+        try:
+            do_work()
+            logging.info("Progam finished successful")
+            finished = True
+        except Exception as exception:  # pylint: disable=broad-except
+            logging.error(  # pylint:disable=logging-fstring-interpolation
+                f"Exception: {exception}, sleeping a minute"
+            )
+            traceback.print_exc()
+            time.sleep(60)
 
 
 # == MAIN ====================================================================
