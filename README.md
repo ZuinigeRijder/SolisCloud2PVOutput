@@ -100,7 +100,7 @@ domot_familyloadpower_id = 0
 domot_homeconsumption_id = 0
 ````
 
-Because I see some forks or local adaptions for people wanting a slightly different behaviour, I made some adaptions to the SolisCloud2PVOutput solution and configuration to capture (some of) those variations.
+Because I see some forks or local adaptions for people wanting a slightly different behavior, I made some adaptions to the SolisCloud2PVOutput solution and configuration to capture (some of) those variations.
 Now the following is possible:
 - made it possible to have the config files not in the current directory, but just use the directory where the python script is located
 - use AC voltage instead of DC Voltage for the PVOutput Voltage field (setting pvoutput_fill_voltage_with_ac_voltage)
