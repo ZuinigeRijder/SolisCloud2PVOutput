@@ -20,7 +20,9 @@ The soliscloud_to_pvoutput.py script will get the first station id with the secr
 * watt (current)
 * watthour today
 * inverter temperature (instead of outside temperature, you can still overrule with weather device)
-* AC voltage (max voltage of 3 phases, used "Power Consumption" field, so read "AC Volt" for the "Power Used" column of PVOutput and ignore "Energy Used" column)
+* AC voltage (max voltage of 3 phases), default "Power Consumption" field is misused, so read "AC Volt" for the "Power Used" column of PVOutput and ignore "Energy Used" column
+* People with [Solis Consumption Monitoring solution installed](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/issues/15) can also send the Power Used (FamilyLoadPower) instead of AC Voltage
+* People with [Solis Consumption Monitoring solution and Solis hybrid inverter with battery storage](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/24) can also send the Power Used (HomeConsumption) instead of AC Voltage.
 
 This information is used to compute the new information to be send to PVOutput and/or Domoticz, when the timestamp is changed.
 
@@ -29,7 +31,8 @@ Notes
 * the script will exit outside 5 and 23
 * Each new day the "watthour today" starts with 0
 * Because the resolution of the SolisCloud watthour is in 100 Watt, a higher resolution is computed with current Watt
-* if you have more than 1 station, more than 4 strings or a 3 phase inverter, you need to adapt the script
+* if you have more than 1 station [you need to configure each inverter in different directories](#configuration-with-multiple-inverters-in-one-soliscloud-station)
+* If you have more than 4 strings or a 3 phase inverter, you need to adapt the script (sorry, not supported yet)
 
 ## SolisCloud
 [SolisCloud](https://www.soliscloud.com/) is the next generation Portal for Solis branded PV systems from Ginlong.
@@ -65,19 +68,51 @@ If you want to know how to configure in Domoticz your inverter, see [this discus
 
 # Configuration
 Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets and domoticz configuration, including if you want to send to PVOutput, Domoticz or both. By default only output is send to PVOutput:
-* send_to_pvoutput = True
-* soliscloud_api_id = 1300386381123456789
-* soliscloud_api_secret = 304abf2bd8a44242913d704123456789
-* soliscloud_api_url = https://www.soliscloud.com:13333
-* soliscloud_inverter_index = 0
-* pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
-* pvoutput_system_id = 12345
-* send_to_domoticz = False
-* domot_url = http://192.168.0.222:8081
-* domot_power_generated_id = 0
-* domot_ac_volt_id = 0
-* domot_inverter_temp_id = 0
-* domot_volt_id = 0
+````
+[api_secrets]
+soliscloud_api_id = 1300386381123456789
+soliscloud_api_secret = 304abf2bd8a44242913d704123456789
+soliscloud_api_url = https://www.soliscloud.com:13333
+soliscloud_inverter_index = 0
+pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
+pvoutput_system_id = 12345
+
+[PVOutput]
+send_to_pvoutput = True
+pvoutput_fill_temperature_with_inverter_temperature = True
+pvoutput_fill_voltage_with_ac_voltage = False
+pvoutput_fill_power_consumption_with_familyloadpower = False
+pvoutput_fill_power_consumption_with_homeconsumption = False
+pvoutput_fill_power_consumption_with_ac_voltage = True
+
+[Domoticz]
+send_to_domoticz = False
+domot_url = http://192.168.0.222:8081
+domot_power_generated_id = 0
+domot_ac_volt_id = 0
+domot_inverter_temp_id = 0
+domot_volt_id = 0
+domot_solarpower_id = 0
+domot_energygeneration_id = 0
+domot_batterypower_id = 0
+domot_gridpower_id = 0
+domot_familyloadpower_id = 0
+domot_homeconsumption_id = 0
+````
+
+Because I see some forks or local adaptions for people wanting a slightly different behaviour, I made some adaptions to the SolisCloud2PVOutput solution and configuration to capture (some of) those variations.
+Now the following is possible:
+- made it possible to have the config files not in the current directory, but just use the directory where the python script is located
+- use AC voltage instead of DC Voltage for the PVOutput Voltage field (setting pvoutput_fill_voltage_with_ac_voltage)
+- do NOT send the inverter temperature to PVOutput (setting pvoutput_fill_temperature_with_inverter_temperature)
+- extra values possible to send to Domoticz (see above), when domot_[name]_id is 0, it will NOT be send to domoticz
+- instead of misusing the PVOutput PowerConsumption field for the AC voltage, you can also use FamilyLoadPower or HomeConsumption (setting pvoutput_fill_power_consumption_with_familyloadpower, pvoutput_fill_power_consumption_with_homeconsumption, pvoutput_fill_power_consumption_with_ac_voltage)
+
+Note 1: for the last bullet, you need to have a [Solis Consumption Monitoring solution installed](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/issues/15), also supported is [a Solis hybrid inverter with battery storage](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/24).
+
+Note 2: make sure that you move send_to_pvoutput setting to the [PVOutput] section, if you have an already existing configuration.
+
+
 
 # Usage: Windows 10
 Make sure to go to the directory where soliscloud_to_pvoutput.py and soliscloud_to_pvoutput.cfg is located.
@@ -110,7 +145,7 @@ Log files are written in the home subdirectory solis
 
 Make 2 PVOutput accounts (you need 2 email addresses) for each inverter a separate PVOutput account. Make sure to configure the PVOutput accounts and get the PVOutput API keys.
 
-The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate inverter and send the output to a appropriate PVOutput account as target.
+The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate inverter (setting soliscloud_inverter_index) and send the output to a appropriate PVOutput account as target.
 
 Create two directories, copy the SolisCloud2PVOutput files (soliscloud_to_pvoutput.py, soliscloud_to_pvoutput.cfg, solis.sh and logging_config.ini) to each directory and configure in each directory soliscloud_to_pvoutput.cfg:
 - solis
