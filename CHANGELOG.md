@@ -1,3 +1,67 @@
+<a name="R1.13.0"></a>
+# [Adaptions to the SolisCloud2PVOutput solution and configuration to support variations in use (R1.13.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.13.0) - 22 Jun 2023
+
+Because I see some forks or local adaptions for people wanting a slightly different behavior, I made some adaptions to the SolisCloud2PVOutput solution and configuration to capture (some of) those variations.
+Now the following is possible:
+- made it possible to have the config files not in the current directory, but just use the directory where the python script is located
+- use AC voltage instead of DC Voltage for the PVOutput Voltage field (setting pvoutput_fill_voltage_with_ac_voltage)
+- do NOT send the inverter temperature to PVOutput (setting pvoutput_fill_temperature_with_inverter_temperature)
+- extra values possible to send to Domoticz (see above), when domot_[name]_id is 0, it will NOT be send to domoticz
+- instead of misusing the PVOutput PowerConsumption field for the AC voltage, you can also use FamilyLoadPower or HomeConsumption (setting pvoutput_fill_power_consumption_with_familyloadpower, pvoutput_fill_power_consumption_with_homeconsumption, pvoutput_fill_power_consumption_with_ac_voltage)
+
+Note 1: for the last bullet, you need to have a [Solis Consumption Monitoring solution installed](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/issues/15), also supported is [a Solis hybrid inverter with battery storage](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/24).
+
+Note 2: make sure that you move send_to_pvoutput setting to the [PVOutput] section, if you have an already existing configuration.
+
+Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets and domoticz configuration, including if you want to send to PVOutput, Domoticz or both. By default only output is send to PVOutput:
+````
+[api_secrets]
+soliscloud_api_id = 1300386381123456789
+soliscloud_api_secret = 304abf2bd8a44242913d704123456789
+soliscloud_api_url = https://www.soliscloud.com:13333
+soliscloud_inverter_index = 0
+pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
+pvoutput_system_id = 12345
+
+[PVOutput]
+send_to_pvoutput = True
+pvoutput_fill_temperature_with_inverter_temperature = True
+pvoutput_fill_voltage_with_ac_voltage = False
+pvoutput_fill_power_consumption_with_familyloadpower = False
+pvoutput_fill_power_consumption_with_homeconsumption = False
+pvoutput_fill_power_consumption_with_ac_voltage = True
+
+[Domoticz]
+send_to_domoticz = False
+domot_url = http://192.168.0.222:8081
+domot_power_generated_id = 0
+domot_ac_volt_id = 0
+domot_inverter_temp_id = 0
+domot_volt_id = 0
+domot_solarpower_id = 0
+domot_energygeneration_id = 0
+domot_batterypower_id = 0
+domot_gridpower_id = 0
+domot_familyloadpower_id = 0
+domot_homeconsumption_id = 0
+````
+
+
+[Changes][R1.13.0]
+
+
+<a name="R1.12.0"></a>
+# [Avoid exiting program when SolisCloud returns not filled data (R1.12.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.12.0) - 31 May 2023
+
+I encounter that SolisCloud returned data without error, but the data was not filled correctly. As  a result an exception occurred and the program exited. Fortunately I noticed it, so I could start the script the same day again.
+
+Added a try/catch and when such an exception occurs, wait one minute and try again.
+
+Also renamed some variables for better readability.
+
+[Changes][R1.12.0]
+
+
 <a name="R1.11.0"></a>
 # [Added support for multiple inverters (R1.11.0)](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/releases/tag/R1.11.0) - 12 May 2023
 
@@ -172,6 +236,8 @@ Change your API SECRETS in the configuration file "soliscloud_to_pvoutput.cfg". 
 [Changes][R1.0.0]
 
 
+[R1.13.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.12.0...R1.13.0
+[R1.12.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.11.0...R1.12.0
 [R1.11.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.10.0...R1.11.0
 [R1.10.0]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.9.1...R1.10.0
 [R1.9.1]: https://github.com/ZuinigeRijder/SolisCloud2PVOutput/compare/R1.9.0...R1.9.1
