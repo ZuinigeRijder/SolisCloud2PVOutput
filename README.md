@@ -14,7 +14,7 @@
 # SolisCloud to PVOutput and/or Domoticz
 Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal inverter update to PVOutput portal and/or Domoticz.
 
-The soliscloud_to_pvoutput.py script will get the first station id with the secrets of SolisCloud (see next section). Thereafter it will get the inverter id and serial number via the configured SOLISCLOUD_INVERTER_INDEX (default the first inverter). Then in an endless loop the inverter details are fetched and the following information is used:
+The soliscloud_to_pvoutput.py script will get the station id via the configured soliscloud_station_index (default the first station) with the secrets of SolisCloud (see next section). Thereafter it will get the inverter id and serial number via the configured soliscloud_inverter_index (default the first inverter). Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
 * DC PV voltage (assuming no more than 4 strings)
 * watt (current)
@@ -73,6 +73,7 @@ Change in soliscloud_to_pvoutput.cfg the following lines with your above obtaine
 soliscloud_api_id = 1300386381123456789
 soliscloud_api_secret = 304abf2bd8a44242913d704123456789
 soliscloud_api_url = https://www.soliscloud.com:13333
+soliscloud_station_index = 0
 soliscloud_inverter_index = 0
 pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
 pvoutput_system_id = 12345
@@ -145,14 +146,14 @@ Log files are written in the home subdirectory solis
 
 Make 2 PVOutput accounts (you need 2 email addresses) for each inverter a separate PVOutput account. Make sure to configure the PVOutput accounts and get the PVOutput API keys.
 
-The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate inverter (setting soliscloud_inverter_index) and send the output to a appropriate PVOutput account as target.
+The solution is to have 2 scripts running in different directories (one for each inverter) and for the each directory you do modifications, e.g. the configuration to get the appropriate station (setting soliscloud_station_index) and inverter (setting soliscloud_inverter_index) and send the output to a appropriate PVOutput account as target.
 
 Create two directories, copy the SolisCloud2PVOutput files (soliscloud_to_pvoutput.py, soliscloud_to_pvoutput.cfg, solis.sh and logging_config.ini) to each directory and configure in each directory soliscloud_to_pvoutput.cfg:
 - solis
 - solis2
 
 In solis2 directory you change the following:
-- modify soliscloud_to_pvoutput.cfg to point the second PVOutput account secrets and change the soliscloud_inverter_index to 1 (to get the data of the second inverter)
+- modify soliscloud_to_pvoutput.cfg to point the second PVOutput account secrets and change the soliscloud_station_index to 1 (to get the second station) and/or soliscloud_inverter_index to 1 (to get the data of the second inverter)
 - rename solis.sh to solis2.sh and modify solis2.sh to go to directory solis2 (line 9: cd ~/solis2)
 
 Have two cronrabs running (for solis.sh and solis2.sh)
