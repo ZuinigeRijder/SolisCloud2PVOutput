@@ -8,6 +8,7 @@ import base64
 import hashlib
 import hmac
 import json
+import random
 import time
 import sys
 import configparser
@@ -20,8 +21,24 @@ from datetime import datetime, timezone
 from urllib.error import HTTPError, URLError
 from urllib.request import urlopen, Request
 
+from paho.mqtt import client as mqtt_client
+
+
+def arg_has(string: str) -> bool:
+    """arguments has string"""
+    for i in range(1, len(sys.argv)):
+        if sys.argv[i].lower() == string:
+            return True
+    return False
+
+
 # == read api_secrets in soliscloud_to_pvoutput.cfg ==========================
 SCRIPT_DIRNAME = path.abspath(path.dirname(__file__))
+logging.config.fileConfig(f"{SCRIPT_DIRNAME}/logging_config.ini")
+D = arg_has("debug")
+if D:
+    logging.getLogger().setLevel(logging.DEBUG)
+
 parser = configparser.ConfigParser()
 parser.read(f"{SCRIPT_DIRNAME}/soliscloud_to_pvoutput.cfg")
 
@@ -50,6 +67,8 @@ SOLISCLOUD_STATION_INDEX = int(get(api_secrets, "soliscloud_station_index", "0")
 SOLISCLOUD_INVERTER_INDEX = int(get(api_secrets, "soliscloud_inverter_index", "0"))
 PVOUTPUT_API_KEY = get(api_secrets, "pvoutput_api_key")
 PVOUTPUT_SYSTEM_ID = get(api_secrets, "pvoutput_system_id")
+
+SOLISCLOUD_INVERTER_SN = "SN"  # to be filled later by program
 
 # == PVOutput info, fill in yours in soliscloud_to_pvoutput.cfg ===========
 pvoutput_info = dict(parser.items("PVOutput"))
@@ -87,6 +106,32 @@ DOMOTICZ_GRIDPOWER_ID = get(domoticz_info, "domot_gridpower_id", "0")
 DOMOTICZ_FAMILYLOADPOWER_ID = get(domoticz_info, "domot_familyloadpower_id", "0")
 DOMOTICZ_HOMECONSUMPTION_ID = get(domoticz_info, "domot_homeconsumption_id", "0")
 
+# == mqtt info, fill in yours in soliscloud_to_pvoutput.cfg ===========
+mqtt_info = dict(parser.items("MQTT"))
+SEND_TO_MQTT = get_bool(mqtt_info, "send_to_mqtt", False)
+MQTT_BROKER_HOSTNAME = get(mqtt_info, "mqtt_broker_hostname", "localhost")
+MQTT_BROKER_PORT = int(get(mqtt_info, "mqtt_broker_port", "1883"))
+MQTT_BROKER_USERNAME = get(mqtt_info, "mqtt_broker_username", "")
+MQTT_BROKER_PASSWORD = get(mqtt_info, "mqtt_broker_password", "")
+
+MQTT_MAIN_TOPIC = get(mqtt_info, "mqtt_main_topic", "soliscloud2pvoutput")
+
+MQTT_LAST_UPDATE_ID = get(mqtt_info, "mqtt_last_update_id", "last_update")
+MQTT_POWER_GENERATED_ID = get(mqtt_info, "mqtt_power_generated_id", "power_generated")
+MQTT_AC_VOLT_ID = get(mqtt_info, "mqtt_ac_volt_id", "ac_volt")
+MQTT_INVERTER_TEMP_ID = get(mqtt_info, "mqtt_inverter_temp_id", "inverter_temp")
+MQTT_VOLT_ID = get(mqtt_info, "mqtt_volt_id", "volt")
+MQTT_SOLARPOWER_ID = get(mqtt_info, "mqtt_solarpower_id", "solarpower")
+MQTT_ENERGYGENERATION_ID = get(
+    mqtt_info, "mqtt_energygeneration_id", "energygeneration"
+)
+MQTT_BATTERYPOWER_ID = get(mqtt_info, "mqtt_batterypower_id", "batterypower")
+MQTT_GRIDPOWER_ID = get(mqtt_info, "mqtt_gridpower_id", "gridpower")
+MQTT_FAMILYLOADPOWER_ID = get(mqtt_info, "mqtt_familyloadpower_id", "familyloadpower")
+MQTT_HOMECONSUMPTION_ID = get(mqtt_info, "mqtt_homeconsumption_id", "homeconsumption")
+
+MQTT_CLIENT = None  # will be filled at MQTT connect if configured
+
 # == Constants ===============================================================
 VERB = "POST"
 CONTENT_TYPE = "application/json"
@@ -97,8 +142,6 @@ PVOUTPUT_ADD_URL = "http://pvoutput.org/service/r2/addbatchstatus.jsp"
 
 
 TODAY = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
-
-logging.config.fileConfig(f"{SCRIPT_DIRNAME}/logging_config.ini")
 
 
 # == post ====================================================================
@@ -209,9 +252,93 @@ def send_to_domoticz(idx: str, value: str):
             return
 
 
+# == connect MQTT ========================================================
+def connect_mqtt():
+    """connect_mqtt"""
+
+    mqtt_first_reconnect_delay = 1
+    mqtt_reconnect_rate = 2
+    mqtt_max_reconnect_count = 12
+    mqtt_max_reconnect_delay = 60
+
+    def on_connect(client, userdata, flags, rc):  # pylint: disable=unused-argument
+        if rc == 0:
+            logging.debug("Connected to MQTT Broker!")
+        else:
+            logging.error("Failed to connect to MQTT Broker, return code %d\n", rc)
+
+    def on_disconnect(client, userdata, rc):  # pylint: disable=unused-argument
+        logging.info("Disconnected with result code: %s", rc)
+        reconnect_count = 0
+        reconnect_delay = mqtt_first_reconnect_delay
+        while reconnect_count < mqtt_max_reconnect_count:
+            logging.info("Reconnecting in %d seconds...", reconnect_delay)
+            time.sleep(reconnect_delay)
+
+            try:
+                client.reconnect()
+                logging.info("Reconnected successfully!")
+                return
+            except Exception as reconnect_ex:  # pylint: disable=broad-except
+                logging.error("%s. Reconnect failed. Retrying...", reconnect_ex)
+
+            reconnect_delay *= mqtt_reconnect_rate
+            reconnect_delay = min(reconnect_delay, mqtt_max_reconnect_delay)
+            reconnect_count += 1
+        logging.info("Reconnect failed after %s attempts. Exiting...", reconnect_count)
+
+    mqtt_client_id = (
+        f"{MQTT_MAIN_TOPIC}-{SOLISCLOUD_INVERTER_SN}-{random.randint(0, 1000)}"
+    )
+    client = mqtt_client.Client(mqtt_client_id)
+    client.on_connect = on_connect
+    client.on_disconnect = on_disconnect
+    if MQTT_BROKER_USERNAME and MQTT_BROKER_PASSWORD:
+        client.username_pw_set(MQTT_BROKER_USERNAME, MQTT_BROKER_PASSWORD)
+    client.connect(MQTT_BROKER_HOSTNAME, MQTT_BROKER_PORT)
+    return client
+
+
+# == send to MQTT ========================================================
+def send_to_mqtt(subtopic: str, value: str):
+    """send_to_mqtt"""
+    msg_count = 1
+    topic = f"{MQTT_MAIN_TOPIC}/{SOLISCLOUD_INVERTER_SN}/{subtopic}"
+    msg = f"{value}"
+    logging.info(  # pylint:disable=logging-fstring-interpolation
+        f"topic: {topic}, msg: {msg}"
+    )
+    while True:
+        try:
+            error = False
+            result = MQTT_CLIENT.publish(topic, msg, qos=1, retain=True)
+            status = result[0]
+            if status == 0:
+                msg_count = 6
+            else:
+                error = True
+        except Exception as publish_ex:  # pylint: disable=broad-except
+            logging.error(  # pylint:disable=logging-fstring-interpolation
+                f"MQTT publish Exception: {publish_ex}, sleeping a minute"
+            )
+            traceback.print_exc()
+            time.sleep(60)
+
+        if error:
+            logging.error(  # pylint:disable=logging-fstring-interpolation
+                f"Failed to send message {msg} to topic {topic}"
+            )
+            time.sleep(1)
+            msg_count += 1
+
+        if msg_count > 5:
+            break
+
+
 # == get_inverter_list_body ==================================================
 def get_inverter_list_body() -> str:
     """get inverter list body"""
+    global SOLISCLOUD_INVERTER_SN  # pylint: disable=global-statement
     body = '{"userid":"' + SOLISCLOUD_API_ID + '"}'
     content = get_solis_cloud_data(USER_STATION_LIST, body)
     station_info = json.loads(content)["data"]["page"]["records"][
@@ -226,6 +353,7 @@ def get_inverter_list_body() -> str:
     ]
     inverter_id = inverter_info["id"]
     inverter_sn = inverter_info["sn"]
+    SOLISCLOUD_INVERTER_SN = inverter_sn
 
     body = '{"id":"' + inverter_id + '","sn":"' + inverter_sn + '"}'
     logging.info("body: %s", body)
@@ -235,7 +363,20 @@ def get_inverter_list_body() -> str:
 # == do_work ====================================================================
 def do_work():
     """do_work"""
+    global MQTT_CLIENT  # pylint:disable=global-statement
     inverter_detail_body = get_inverter_list_body()
+    if SEND_TO_MQTT:
+        while True:
+            try:
+                MQTT_CLIENT = connect_mqtt()
+                MQTT_CLIENT.loop_start()
+                break
+            except Exception as connect_ex:  # pylint: disable=broad-except
+                logging.error(  # pylint:disable=logging-fstring-interpolation
+                    f"MQTT connect Exception: {connect_ex}, sleeping a minute"
+                )
+                traceback.print_exc()
+                time.sleep(60)
     timestamp_previous = "0"
     energy_generation = 0
     while True:
@@ -350,6 +491,23 @@ def do_work():
                 send_to_domoticz(DOMOTICZ_GRIDPOWER_ID, str(grid_power))
                 send_to_domoticz(DOMOTICZ_FAMILYLOADPOWER_ID, str(family_load))
                 send_to_domoticz(DOMOTICZ_HOMECONSUMPTION_ID, str(home_consumption))
+
+            if SEND_TO_MQTT:
+                send_to_mqtt(MQTT_LAST_UPDATE_ID, f"{TODAY} {current_time}")
+                send_to_mqtt(
+                    MQTT_POWER_GENERATED_ID,
+                    str(solar_power) + ";" + str(energy_generation),
+                )
+                send_to_mqtt(MQTT_AC_VOLT_ID, ac_voltage)
+                send_to_mqtt(MQTT_INVERTER_TEMP_ID, inverter_temperature)
+                send_to_mqtt(MQTT_VOLT_ID, dc_voltage)
+                send_to_mqtt(MQTT_SOLARPOWER_ID, str(solar_power))
+                send_to_mqtt(MQTT_ENERGYGENERATION_ID, str(energy_generation))
+                send_to_mqtt(MQTT_BATTERYPOWER_ID, str(battery_power))
+                send_to_mqtt(MQTT_GRIDPOWER_ID, str(grid_power))
+                send_to_mqtt(MQTT_FAMILYLOADPOWER_ID, str(family_load))
+                send_to_mqtt(MQTT_HOMECONSUMPTION_ID, str(home_consumption))
+
             timestamp_previous = timestamp_current
 
 
@@ -361,12 +519,15 @@ def main_loop():
             do_work()
             logging.info("Progam finished successful")
             finished = True
-        except Exception as exception:  # pylint: disable=broad-except
+        except Exception as main_loop_ex:  # pylint: disable=broad-except
             logging.error(  # pylint:disable=logging-fstring-interpolation
-                f"Exception: {exception}, sleeping a minute"
+                f"Exception: {main_loop_ex}, sleeping a minute"
             )
             traceback.print_exc()
             time.sleep(60)
+
+    if SEND_TO_MQTT:
+        MQTT_CLIENT.loop_stop()
 
 
 # == MAIN ====================================================================

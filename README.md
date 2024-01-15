@@ -1,7 +1,8 @@
-- [SolisCloud to PVOutput and/or Domoticz](#soliscloud-to-pvoutput-andor-domoticz)
+- [SolisCloud to PVOutput, Domoticz and/or MQTT Broker (e.g. HomeAssistant, ioBroker)](#soliscloud-to-pvoutput-domoticz-andor-mqtt-broker-eg-homeassistant-iobroker)
   - [SolisCloud](#soliscloud)
   - [PVOutput](#pvoutput)
   - [Domoticz](#domoticz)
+  - [MQTT Broker (e.g. HomeAssistant, ioBroker)](#mqtt-broker-eg-homeassistant-iobroker)
 - [Configuration](#configuration)
 - [Usage: Windows 10](#usage-windows-10)
 - [Usage: Linux or Raspberry pi](#usage-linux-or-raspberry-pi)
@@ -11,8 +12,8 @@
   - [Combined data of two PVOutput accounts/inverters](#combined-data-of-two-pvoutput-accountsinverters)
 - [Example standard output of SolisCloud2PVoutput](#example-standard-output-of-soliscloud2pvoutput)
 
-# SolisCloud to PVOutput and/or Domoticz
-Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal inverter update to PVOutput portal and/or Domoticz.
+# SolisCloud to PVOutput, Domoticz and/or MQTT Broker (e.g. HomeAssistant, ioBroker)
+Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal inverter update to PVOutput portal, Domoticz, and/or MQTT Broker (e.g. HomeAssistant, ioBroker).
 
 The soliscloud_to_pvoutput.py script will get the station id via the configured soliscloud_station_index (default the first station) with the secrets of SolisCloud (see next section). Thereafter it will get the inverter id and serial number via the configured soliscloud_inverter_index (default the first inverter). Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
@@ -66,8 +67,13 @@ If you want to know how to configure in Domoticz your inverter, see [this discus
 
 ![alt text](https://user-images.githubusercontent.com/17342657/237064582-59fcd74b-5b04-4578-98a4-18819bf8482f.png)
 
+## MQTT Broker (e.g. HomeAssistant, ioBroker)
+An MQTT broker is a server that receives all messages from the clients and then routes the messages to the appropriate destination clients. Information is organized in a hierarchy of topics. When SolisCloud2PVOutput has a new item of data to distribute, it sends a control message with the data to the connected broker. The broker then distributes the information to any clients that have subscribed to that topic. The SolisCloud2PVOutput does not need to have any data on the number or locations of subscribers, and subscribers, in turn, do not have to be configured with any data about the publishers.
+
+If you want to know how to configure your inverter to send information to a MQTT Broker, see [this discussion](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/30).
+
 # Configuration
-Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets and domoticz configuration, including if you want to send to PVOutput, Domoticz or both. By default only output is send to PVOutput:
+Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets, domoticz configuration, mqtt configuration, including if you want to send information to PVOutput, Domoticz, MQTT or a combination of those. By default only output is send to PVOutput:
 ````
 [api_secrets]
 soliscloud_api_id = 1300386381123456789
@@ -99,6 +105,25 @@ domot_batterypower_id = 0
 domot_gridpower_id = 0
 domot_familyloadpower_id = 0
 domot_homeconsumption_id = 0
+
+[MQTT]
+send_to_mqtt = False
+mqtt_broker_hostname = localhost
+mqtt_broker_port = 1883
+mqtt_broker_username =
+mqtt_broker_password =
+mqtt_main_topic = SolisCloud2PVOutput
+mqtt_last_update_id = last_update
+mqtt_power_generated_id = power_generated
+mqtt_ac_volt_id = ac_volt
+mqtt_inverter_temp_id = inverter_temp
+mqtt_volt_id = volt
+mqtt_solarpower_id = solarpower
+mqtt_energygeneration_id = energygeneration
+mqtt_batterypower_id = batterypower
+mqtt_gridpower_id = gridpower
+mqtt_familyloadpower_id = familyloadpower
+mqtt_homeconsumption_id = homeconsumption
 ````
 
 Because I see some forks or local adaptions for people wanting a slightly different behavior, I made some adaptions to the SolisCloud2PVOutput solution and configuration to capture (some of) those variations.
@@ -113,7 +138,7 @@ Note 1: for the last bullet, you need to have a [Solis Consumption Monitoring so
 
 Note 2: make sure that you move send_to_pvoutput setting to the [PVOutput] section, if you have an already existing configuration.
 
-
+Note 3: mqtt_broker_username and mqtt_broker_password are optional
 
 # Usage: Windows 10
 Make sure to go to the directory where soliscloud_to_pvoutput.py and soliscloud_to_pvoutput.cfg is located.
