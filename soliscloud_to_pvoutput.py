@@ -8,7 +8,6 @@ import base64
 import hashlib
 import hmac
 import json
-import random
 import time
 import sys
 import configparser
@@ -287,9 +286,7 @@ def connect_mqtt():
             reconnect_count += 1
         logging.info("Reconnect failed after %s attempts. Exiting...", reconnect_count)
 
-    mqtt_client_id = (
-        f"{MQTT_MAIN_TOPIC}-{SOLISCLOUD_INVERTER_SN}-{random.randint(0, 1000)}"
-    )
+    mqtt_client_id = f"{MQTT_MAIN_TOPIC}-{SOLISCLOUD_INVERTER_SN}"
     client = mqtt_client.Client(mqtt_client_id)
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
