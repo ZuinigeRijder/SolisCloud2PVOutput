@@ -101,6 +101,7 @@ DOMOTICZ_VOLT_ID = get(domoticz_info, "domot_volt_id", "0")
 DOMOTICZ_SOLARPOWER_ID = get(domoticz_info, "domot_solarpower_id", "0")
 DOMOTICZ_ENERGYGENERATION_ID = get(domoticz_info, "domot_energygeneration_id", "0")
 DOMOTICZ_BATTERYPOWER_ID = get(domoticz_info, "domot_batterypower_id", "0")
+DOMOTICZ_BATTERYSOC_ID = get(domoticz_info, "domot_batterysoc_id", "0")
 DOMOTICZ_GRIDPOWER_ID = get(domoticz_info, "domot_gridpower_id", "0")
 DOMOTICZ_FAMILYLOADPOWER_ID = get(domoticz_info, "domot_familyloadpower_id", "0")
 DOMOTICZ_HOMECONSUMPTION_ID = get(domoticz_info, "domot_homeconsumption_id", "0")
@@ -125,6 +126,7 @@ MQTT_ENERGYGENERATION_ID = get(
     mqtt_info, "mqtt_energygeneration_id", "energygeneration"
 )
 MQTT_BATTERYPOWER_ID = get(mqtt_info, "mqtt_batterypower_id", "batterypower")
+MQTT_BATTERYSOC_ID = get(mqtt_info, "mqtt_batterysoc_id", "batterysoc")
 MQTT_GRIDPOWER_ID = get(mqtt_info, "mqtt_gridpower_id", "gridpower")
 MQTT_FAMILYLOADPOWER_ID = get(mqtt_info, "mqtt_familyloadpower_id", "familyloadpower")
 MQTT_HOMECONSUMPTION_ID = get(mqtt_info, "mqtt_homeconsumption_id", "homeconsumption")
@@ -386,8 +388,9 @@ def do_work():
 
         content = get_solis_cloud_data(INVERTER_DETAIL, inverter_detail_body)
         inverter_detail = json.loads(content)["data"]
-        # json_formatted_str = json.dumps(inverter_detail, indent=2)
-        # print(json_formatted_str)
+        if D:
+            json_formatted_str = json.dumps(inverter_detail, indent=2)
+            print(json_formatted_str)
         timestamp_current = inverter_detail["dataTimestamp"]
         dc_voltage = str(
             inverter_detail["uPv1"]
@@ -407,6 +410,7 @@ def do_work():
         solar_power = round(inverter_detail["pac"] * 1000)
         family_load = round(inverter_detail["familyLoadPower"] * 1000)
         battery_power = round(inverter_detail["batteryPower"] * 1000)
+        battery_soc = inverter_detail["batteryCapacitySoc"]
         grid_power = round(inverter_detail["psum"] * 1000)
         home_consumption = solar_power - grid_power - battery_power
         if timestamp_previous == "0":
@@ -440,7 +444,7 @@ def do_work():
 
             current_time = datetime_current.strftime("%H:%M")
             if logging.DEBUG >= logging.root.level:
-                debug_string = f"date={TODAY}, time={current_time}, energy_generation={energy_generation}, solar_power={solar_power}, battery_power={battery_power}, grid_power={grid_power}, family_load={family_load}, home_consumption={home_consumption}, inverter_temperature={inverter_temperature}, dc_voltage={dc_voltage}, ac_voltage={ac_voltage}"  # noqa
+                debug_string = f"date={TODAY}, time={current_time}, energy_generation={energy_generation}, solar_power={solar_power}, battery_power={battery_power}, battery_soc={battery_soc}, grid_power={grid_power}, family_load={family_load}, home_consumption={home_consumption}, inverter_temperature={inverter_temperature}, dc_voltage={dc_voltage}, ac_voltage={ac_voltage}"  # noqa
                 logging.debug(debug_string)
 
             if SEND_TO_PVOUTPUT:
@@ -485,6 +489,7 @@ def do_work():
                 send_to_domoticz(DOMOTICZ_SOLARPOWER_ID, str(solar_power))
                 send_to_domoticz(DOMOTICZ_ENERGYGENERATION_ID, str(energy_generation))
                 send_to_domoticz(DOMOTICZ_BATTERYPOWER_ID, str(battery_power))
+                send_to_domoticz(DOMOTICZ_BATTERYSOC_ID, str(battery_soc))
                 send_to_domoticz(DOMOTICZ_GRIDPOWER_ID, str(grid_power))
                 send_to_domoticz(DOMOTICZ_FAMILYLOADPOWER_ID, str(family_load))
                 send_to_domoticz(DOMOTICZ_HOMECONSUMPTION_ID, str(home_consumption))
@@ -501,6 +506,7 @@ def do_work():
                 send_to_mqtt(MQTT_SOLARPOWER_ID, str(solar_power))
                 send_to_mqtt(MQTT_ENERGYGENERATION_ID, str(energy_generation))
                 send_to_mqtt(MQTT_BATTERYPOWER_ID, str(battery_power))
+                send_to_mqtt(MQTT_BATTERYSOC_ID, str(battery_soc))
                 send_to_mqtt(MQTT_GRIDPOWER_ID, str(grid_power))
                 send_to_mqtt(MQTT_FAMILYLOADPOWER_ID, str(family_load))
                 send_to_mqtt(MQTT_HOMECONSUMPTION_ID, str(home_consumption))
