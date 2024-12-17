@@ -66,6 +66,7 @@ SOLISCLOUD_STATION_INDEX = int(get(api_secrets, "soliscloud_station_index", "0")
 SOLISCLOUD_INVERTER_INDEX = int(get(api_secrets, "soliscloud_inverter_index", "0"))
 PVOUTPUT_API_KEY = get(api_secrets, "pvoutput_api_key")
 PVOUTPUT_SYSTEM_ID = get(api_secrets, "pvoutput_system_id")
+RUN_UNENDLESS = get_bool(api_secrets, "run_unendless", False)
 
 SOLISCLOUD_INVERTER_SN = "SN"  # to be filled later by program
 
@@ -140,9 +141,6 @@ USER_STATION_LIST = "/v1/api/userStationList"
 INVERTER_LIST = "/v1/api/inverterList"
 INVERTER_DETAIL = "/v1/api/inverterDetail"
 PVOUTPUT_ADD_URL = "http://pvoutput.org/service/r2/addbatchstatus.jsp"
-
-
-TODAY = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
 
 
 # == post ====================================================================
@@ -378,13 +376,20 @@ def do_work():
                 time.sleep(60)
     timestamp_previous = "0"
     energy_generation = 0
+    today_yyymmdd = datetime.now().strftime("%Y%m%d")  # format yyyymmdd
     while True:
         time.sleep(60)  # wait 1 minute before checking again
         datetime_now = datetime.now()
-        # only check between 5 and 23 hours
-        if datetime_now.hour < 5 or datetime_now.hour > 22:
-            logging.info("Outside solar generation hours (5..23)")
-            sys.exit("Exiting program to start fresh tomorrow")
+        if RUN_UNENDLESS:
+            if datetime_now.hour == 0 and datetime_now.minute < 4:  # reset needed
+                timestamp_previous = "0"
+                energy_generation = 0
+                today_yyymmdd = datetime_now.strftime("%Y%m%d")  # format yyyymmdd
+        else:
+            # only check between 5 and 23 hours
+            if datetime_now.hour < 5 or datetime_now.hour > 22:
+                logging.info("Outside solar generation hours (5..23)")
+                sys.exit("Exiting program to start fresh tomorrow")
 
         content = get_solis_cloud_data(INVERTER_DETAIL, inverter_detail_body)
         inverter_detail = json.loads(content)["data"]
@@ -444,7 +449,7 @@ def do_work():
 
             current_time = datetime_current.strftime("%H:%M")
             if logging.DEBUG >= logging.root.level:
-                debug_string = f"date={TODAY}, time={current_time}, energy_generation={energy_generation}, solar_power={solar_power}, battery_power={battery_power}, battery_soc={battery_soc}, grid_power={grid_power}, family_load={family_load}, home_consumption={home_consumption}, inverter_temperature={inverter_temperature}, dc_voltage={dc_voltage}, ac_voltage={ac_voltage}"  # noqa
+                debug_string = f"date={today_yyymmdd}, time={current_time}, energy_generation={energy_generation}, solar_power={solar_power}, battery_power={battery_power}, battery_soc={battery_soc}, grid_power={grid_power}, family_load={family_load}, home_consumption={home_consumption}, inverter_temperature={inverter_temperature}, dc_voltage={dc_voltage}, ac_voltage={ac_voltage}"  # noqa
                 logging.debug(debug_string)
 
             if SEND_TO_PVOUTPUT:
@@ -475,7 +480,7 @@ def do_work():
                 # Temperature	        No	        decimal	    celsius	    23.4
                 # Voltage	            No	        decimal	    volts	    240.7
 
-                pvoutput_string = f"data={TODAY},{current_time},{energy_generation},{solar_power},{energy_consumption},{power_consumption},{temperature},{voltage}"  # noqa
+                pvoutput_string = f"data={today_yyymmdd},{current_time},{energy_generation},{solar_power},{energy_consumption},{power_consumption},{temperature},{voltage}"  # noqa
                 send_pvoutput_data(pvoutput_string)
 
             if SEND_TO_DOMOTICZ:
@@ -495,7 +500,7 @@ def do_work():
                 send_to_domoticz(DOMOTICZ_HOMECONSUMPTION_ID, str(home_consumption))
 
             if SEND_TO_MQTT:
-                send_to_mqtt(MQTT_LAST_UPDATE_ID, f"{TODAY} {current_time}")
+                send_to_mqtt(MQTT_LAST_UPDATE_ID, f"{today_yyymmdd} {current_time}")
                 send_to_mqtt(
                     MQTT_POWER_GENERATED_ID,
                     str(solar_power) + ";" + str(energy_generation),

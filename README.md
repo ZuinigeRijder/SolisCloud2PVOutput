@@ -14,6 +14,7 @@
 
 # SolisCloud to PVOutput, Domoticz and/or MQTT Broker (e.g. HomeAssistant, ioBroker)
 Simple Python3 script to copy latest (normally once per 5 minutes) SolisCloud portal inverter update to PVOutput portal, Domoticz, and/or MQTT Broker (e.g. HomeAssistant, ioBroker).
+Python 3.6 or higher is required.
 
 The soliscloud_to_pvoutput.py script will get the station id via the configured soliscloud_station_index (default the first station) with the secrets of SolisCloud (see next section). Thereafter it will get the inverter id and serial number via the configured soliscloud_inverter_index (default the first inverter). Then in an endless loop the inverter details are fetched and the following information is used:
 * timestamp
@@ -28,12 +29,12 @@ The soliscloud_to_pvoutput.py script will get the station id via the configured 
 This information is used to compute the new information to be send to PVOutput and/or Domoticz, when the timestamp is changed.
 
 Notes
-* only between 5 and 23 hour data is fetched from SolisCloud and copied to PVOutput and/or Domoticz
-* the script will exit outside 5 and 23
-* Each new day the "watthour today" starts with 0
-* Because the resolution of the SolisCloud watthour is in 100 Watt, a higher resolution is computed with current Watt
+* the script will exit outside 5 and 23, unless you have configured "run_unendless = True" in soliscloud_to_pvoutput.cfg
+* each new day the "watthour today" starts with 0
+* because the resolution of the SolisCloud watthour is in 100 Watt, a higher resolution is computed with current Watt
 * if you have more than 1 station [you need to configure each inverter in different directories](#configuration-with-multiple-inverters-in-one-soliscloud-station)
-* If you have more than 4 strings or a 3 phase inverter, you need to adapt the script (sorry, not supported yet)
+* if you have more than 4 strings or a 3 phase inverter, you need to adapt the script (sorry, not supported yet)
+* there is a dependency to package paho_mqtt, you need to install this e.g. by command "python3 -m pip install paho_mqtt==1.6.1"
 
 ## SolisCloud
 [SolisCloud](https://www.soliscloud.com/) is the next generation Portal for Solis branded PV systems from Ginlong.
@@ -83,6 +84,7 @@ soliscloud_station_index = 0
 soliscloud_inverter_index = 0
 pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
 pvoutput_system_id = 12345
+run_unendless = False
 
 [PVOutput]
 send_to_pvoutput = True
@@ -155,8 +157,10 @@ soliscloud_to_pvoutput.py scripts runs on my Raspberry pi with Raspbian GNU/Linu
 Steps:
 * create a directory solis in your home directory
 * copy solis.sh, soliscloud_to_pvoutput.py, soliscloud_to_pvoutput.cfg and logging_config.ini in this solis directory
+* make sure there are no Windows CRLF in the copied files, e.g. make sure by running dos2unix on the copied files
+* if "python --version" refers to 2.x, then you need to change solis.sh to use python3 instead of python
 * change inside soliscloud_to_pvoutput.cfg the API secrets
-* chmod +x solis.sh
+* chmod +r+x solis.sh
 * add the following line in your crontab -e:
 
 ```
