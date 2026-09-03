@@ -74,7 +74,8 @@ An MQTT broker is a server that receives all messages from the clients and then 
 If you want to know how to configure your inverter to send information to a MQTT Broker, see [this discussion](https://github.com/ZuinigeRijder/SolisCloud2PVOutput/discussions/30).
 
 # Configuration
-Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets, domoticz configuration, mqtt configuration, including if you want to send information to PVOutput, Domoticz, MQTT or a combination of those. By default only output is send to PVOutput:
+Change in soliscloud_to_pvoutput.cfg the following lines with your above obtained secrets, domoticz configuration, mqtt configuration, including if you want to send information to PVOutput, Domoticz, MQTT or a combination of those. By default only output is send to PVOutput.
+Some users experience problems with getting the Station ID and Station Serial Number, using the UserStationList API. You can overrule this, by setting  soliscloud_inverter_id and soliscloud_inverter_sn to the appropriate values. You can find those, when selecting your inverter in the [SolisCloud PlantStation overview](https://www.soliscloud.com/overview/plantStation)
 ````
 [api_secrets]
 soliscloud_api_id = 1300386381123456789
@@ -82,6 +83,8 @@ soliscloud_api_secret = 304abf2bd8a44242913d704123456789
 soliscloud_api_url = https://www.soliscloud.com:13333
 soliscloud_station_index = 0
 soliscloud_inverter_index = 0
+soliscloud_inverter_id = ID
+soliscloud_inverter_sn = SN
 pvoutput_api_key = 0f2dd8190d00369ec893b059034dde1123456789
 pvoutput_system_id = 12345
 run_unendless = False

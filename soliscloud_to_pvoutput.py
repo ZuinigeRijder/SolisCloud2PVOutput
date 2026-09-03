@@ -64,11 +64,11 @@ SOLISCLOUD_API_SECRET = get(api_secrets, "soliscloud_api_secret").encode("utf-8"
 SOLISCLOUD_API_URL = get(api_secrets, "soliscloud_api_url")
 SOLISCLOUD_STATION_INDEX = int(get(api_secrets, "soliscloud_station_index", "0"))
 SOLISCLOUD_INVERTER_INDEX = int(get(api_secrets, "soliscloud_inverter_index", "0"))
+SOLISCLOUD_INVERTER_SN = get(api_secrets, "soliscloud_inverter_sn", "SN")
+SOLISCLOUD_INVERTER_ID = get(api_secrets, "soliscloud_inverter_id", "ID")
 PVOUTPUT_API_KEY = get(api_secrets, "pvoutput_api_key")
 PVOUTPUT_SYSTEM_ID = get(api_secrets, "pvoutput_system_id")
 RUN_UNENDLESS = get_bool(api_secrets, "run_unendless", False)
-
-SOLISCLOUD_INVERTER_SN = "SN"  # to be filled later by program
 
 # == PVOutput info, fill in yours in soliscloud_to_pvoutput.cfg ===========
 pvoutput_info = dict(parser.items("PVOutput"))
@@ -335,24 +335,26 @@ def send_to_mqtt(subtopic: str, value: str):
 # == get_inverter_list_body ==================================================
 def get_inverter_list_body() -> str:
     """get inverter list body"""
-    global SOLISCLOUD_INVERTER_SN  # pylint: disable=global-statement
-    body = '{"userid":"' + SOLISCLOUD_API_ID + '"}'
-    content = get_solis_cloud_data(USER_STATION_LIST, body)
-    station_info = json.loads(content)["data"]["page"]["records"][
-        SOLISCLOUD_STATION_INDEX
-    ]
-    station_id = station_info["id"]
+    global SOLISCLOUD_INVERTER_SN, SOLISCLOUD_INVERTER_ID  # pylint: disable=global-statement
+    if SOLISCLOUD_INVERTER_SN == "SN" or SOLISCLOUD_INVERTER_ID == "ID":
+        body = '{"userid":"' + SOLISCLOUD_API_ID + '"}'
+        content = get_solis_cloud_data(USER_STATION_LIST, body)
+        station_info = json.loads(content)["data"]["page"]["records"][
+            SOLISCLOUD_STATION_INDEX
+        ]
+        station_id = station_info["id"]
 
-    body = '{"stationId":"' + station_id + '"}'
-    content = get_solis_cloud_data(INVERTER_LIST, body)
-    inverter_info = json.loads(content)["data"]["page"]["records"][
-        SOLISCLOUD_INVERTER_INDEX
-    ]
-    inverter_id = inverter_info["id"]
-    inverter_sn = inverter_info["sn"]
-    SOLISCLOUD_INVERTER_SN = inverter_sn
+        body = '{"stationId":"' + station_id + '"}'
+        content = get_solis_cloud_data(INVERTER_LIST, body)
+        inverter_info = json.loads(content)["data"]["page"]["records"][
+            SOLISCLOUD_INVERTER_INDEX
+        ]
+        inverter_id = inverter_info["id"]
+        SOLISCLOUD_INVERTER_ID = inverter_id
+        inverter_sn = inverter_info["sn"]
+        SOLISCLOUD_INVERTER_SN = inverter_sn
 
-    body = '{"id":"' + inverter_id + '","sn":"' + inverter_sn + '"}'
+    body = '{"id":"' + SOLISCLOUD_INVERTER_ID + '","sn":"' + SOLISCLOUD_INVERTER_SN + '"}'
     logging.info("body: %s", body)
     return body
 
